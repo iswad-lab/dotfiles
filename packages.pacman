@@ -1,23 +1,23 @@
 # =============================================================================
-# packages.pacman — paquets du dépôt officiel
-# Installé via : run_once_01-packages.sh
-# CachyOS+KDE déjà installé → ce fichier gère uniquement le delta
+# packages.pacman — official repository packages
+# Installed via: run_once_01-packages.sh
+# CachyOS+KDE already installed — this file manages the delta only
 # =============================================================================
 
-# --- GPU hybride NVIDIA + AMD -------------------------------------------------
-switcheroo-control          # bascule iGPU/dGPU
-libva-nvidia-driver         # accélération VA-API NVIDIA (Wayland)
+# --- Hybrid GPU NVIDIA + AMD --------------------------------------------------
+switcheroo-control          # iGPU/dGPU switching
+libva-nvidia-driver         # VA-API hardware acceleration for NVIDIA (Wayland)
 nvidia-prime                # prime-run
-lib32-nvidia-utils          # couche 32bit NVIDIA (Wine, Steam)
-opencl-nvidia               # compute NVIDIA
+lib32-nvidia-utils          # 32-bit NVIDIA layer (Wine, Steam)
+opencl-nvidia               # NVIDIA compute
 lib32-opencl-nvidia
-vulkan-radeon               # iGPU AMD
+vulkan-radeon               # AMD iGPU
 lib32-vulkan-radeon
 lib32-vulkan-icd-loader
 
-# --- Audio pipewire (pipewire-jack remplace jack2 via le script) -------------
-pipewire-jack               # interface JACK sur pipewire
-lib32-pipewire-jack         # couche 32bit pour yabridge (VST 32bit)
+# --- Pipewire audio (pipewire-jack replaces jack2 via script) ----------------
+pipewire-jack               # JACK interface over pipewire
+lib32-pipewire-jack         # 32-bit layer for yabridge (32-bit VST)
 
 # --- Pro Audio ---------------------------------------------------------------
 reaper
@@ -32,7 +32,7 @@ lsp-plugins-clap
 btop
 nvtop
 
-# --- Système -----------------------------------------------------------------
+# --- System ------------------------------------------------------------------
 snapper
 btrfs-assistant
 cpupower
@@ -40,12 +40,12 @@ fwupd
 rsync
 ripgrep
 
-# --- Hardware AMD -------------------------------------------------------------
-amd-ucode                   # microcode AMD
-acpi_call                   # contrôle batterie/châssis
+# --- AMD Hardware ------------------------------------------------------------
+amd-ucode                   # AMD processor microcode
+acpi_call                   # battery/chassis control
 # ryzenadj → AUR
 
-# --- Virtualisation ----------------------------------------------------------
+# --- Virtualization ----------------------------------------------------------
 qemu-desktop
 virt-manager
 podman
@@ -61,4 +61,4 @@ python-virtualenv
 firefox
 zed
 blender
-# davinci-resolve             # optionnel, valider avant déploiement
+# davinci-resolve             # optional, validate before deploying
