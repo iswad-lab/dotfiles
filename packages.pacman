@@ -32,6 +32,10 @@ lsp-plugins-clap
 btop
 nvtop
 
+# --- Network & Security ------------------------------------------------------
+openssh
+ufw
+
 # --- System ------------------------------------------------------------------
 snapper
 btrfs-assistant
@@ -39,6 +43,10 @@ cpupower
 fwupd
 rsync
 ripgrep
+duf                         # better df
+fastfetch                   # system info
+plocate                     # fast file search
+downgrade                   # rollback packages (Arch lifesaver)
 
 # --- AMD Hardware ------------------------------------------------------------
 amd-ucode                   # AMD processor microcode
