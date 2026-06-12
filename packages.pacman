@@ -1,0 +1,64 @@
+# =============================================================================
+# packages.pacman — paquets du dépôt officiel
+# Installé via : run_once_01-packages.sh
+# CachyOS+KDE déjà installé → ce fichier gère uniquement le delta
+# =============================================================================
+
+# --- GPU hybride NVIDIA + AMD -------------------------------------------------
+switcheroo-control          # bascule iGPU/dGPU
+libva-nvidia-driver         # accélération VA-API NVIDIA (Wayland)
+nvidia-prime                # prime-run
+lib32-nvidia-utils          # couche 32bit NVIDIA (Wine, Steam)
+opencl-nvidia               # compute NVIDIA
+lib32-opencl-nvidia
+vulkan-radeon               # iGPU AMD
+lib32-vulkan-radeon
+lib32-vulkan-icd-loader
+
+# --- Audio pipewire (pipewire-jack remplace jack2 via le script) -------------
+pipewire-jack               # interface JACK sur pipewire
+lib32-pipewire-jack         # couche 32bit pour yabridge (VST 32bit)
+
+# --- Pro Audio ---------------------------------------------------------------
+reaper
+yabridge
+qpwgraph
+easyeffects
+realtime-privileges
+rtirq
+lsp-plugins-clap
+
+# --- Monitoring --------------------------------------------------------------
+btop
+nvtop
+
+# --- Système -----------------------------------------------------------------
+snapper
+btrfs-assistant
+cpupower
+fwupd
+rsync
+ripgrep
+
+# --- Hardware AMD -------------------------------------------------------------
+amd-ucode                   # microcode AMD
+acpi_call                   # contrôle batterie/châssis
+# ryzenadj → AUR
+
+# --- Virtualisation ----------------------------------------------------------
+qemu-desktop
+virt-manager
+podman
+distrobox
+
+# --- Dev ---------------------------------------------------------------------
+git
+github-cli
+python-pip
+python-virtualenv
+
+# --- Applications ------------------------------------------------------------
+firefox
+zed
+blender
+# davinci-resolve             # optionnel, valider avant déploiement

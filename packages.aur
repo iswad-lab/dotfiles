@@ -1,0 +1,27 @@
+# =============================================================================
+# packages.aur — paquets AUR (installés via paru)
+# Installé via : run_once_01-packages.sh
+# =============================================================================
+
+# --- GPU hybride -------------------------------------------------------------
+envycontrol                 # gestion profil GPU (performance/hybrid/integrated)
+
+# --- Pro Audio ---------------------------------------------------------------
+reapack
+sws
+airwindows-consolidated-bin
+tal-reverb4-clap-bin
+# nbfc-linux                # en attente fork personnel
+# nbfc-qt                   # en attente fork personnel
+
+# --- Applications ------------------------------------------------------------
+vesktop-bin                 # Discord Wayland natif
+upscayl-bin
+shutter-encoder-bin
+visual-studio-code-bin
+zapzap                      # WhatsApp
+pcloud-drive
+
+# --- Hardware AMD -------------------------------------------------------------
+ryzenadj
+ryzen_smu-dkms-git
