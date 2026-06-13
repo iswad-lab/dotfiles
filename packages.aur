@@ -7,8 +7,6 @@
 envycontrol                 # GPU profile management (performance/hybrid/integrated)
 
 # --- Pro Audio ---------------------------------------------------------------
-reapack
-sws
 airwindows-consolidated-bin
 tal-reverb4-clap-bin
 # nbfc-linux                # pending personal fork validation
