@@ -21,6 +21,8 @@ lib32-pipewire-jack         # 32-bit layer for yabridge (32-bit VST)
 
 # --- Pro Audio ---------------------------------------------------------------
 reaper
+reapack
+sws
 yabridge                    # Windows VST bridge (prebuilt, Wine-version agnostic)
 yabridgectl                 # yabridge management utility
 # wine-staging 9.21 pinned — installed via run_once_02-wine-staging.sh
