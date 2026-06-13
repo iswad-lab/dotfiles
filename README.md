@@ -1,4 +1,4 @@
-# dotfiles — iswad
+# Dotfiles - Iswad
 
 Reproducible setup for **CachyOS x86_64** + KDE Plasma 6 + NVIDIA RTX 3070 / AMD Vega hybrid.
 
