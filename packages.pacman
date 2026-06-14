@@ -64,6 +64,12 @@ qemu-desktop
 virt-manager
 podman
 distrobox
+libvirt
+dnsmasq
+vde2
+openbsd-netcat
+swtpm
+edk2-ovmf
 
 # --- Dev ---------------------------------------------------------------------
 git
@@ -77,8 +83,5 @@ zed
 blender
 obs-studio
 obsidian
+localsend                   # AirDrop-like file sharing
 # davinci-resolve             # optional, validate before deploying
-
-
-
-qemu-desktop libvirt virt-manager dnsmasq vde2 openbsd-netcat swtpm edk2-ovmf
