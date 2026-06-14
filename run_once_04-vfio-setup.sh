@@ -31,7 +31,6 @@ if [ -f "$CMDLINE_FILE" ]; then
   echo "    $CMDLINE_FILE already exists, skipping"
 else
   cat > "$CMDLINE_FILE" << 'EOF'
-# GPU passthrough — isolate NVIDIA RTX 3070 Mobile
 amd_iommu=on iommu=pt vfio-pci.ids=10de:249d,10de:228b
 EOF
   echo "    Created $CMDLINE_FILE"
