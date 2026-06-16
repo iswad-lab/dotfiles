@@ -12,7 +12,8 @@ ALA_URL="https://archive.archlinux.org/packages/w/wine-staging/${WINE_PKG}"
 
 # Remove conflicting wine packages if present
 for pkg in wine wine-cachyos; do
-  if pacman -Q "$pkg" &>/dev/null; then
+  # Check real package name (not virtual provider)
+  if pacman -Q 2>/dev/null | grep -q "^$pkg "; then
     echo ">>> Removing conflicting package: $pkg"
     sudo pacman -Rdd --noconfirm "$pkg"
   fi
