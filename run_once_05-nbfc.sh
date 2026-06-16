@@ -16,17 +16,17 @@ sudo rm -f /usr/bin/nbfc-linux 2>/dev/null || true
 
 git clone --depth=1 https://github.com/iswad-lab/nbfc-linux "$WORKDIR/nbfc-linux"
 cd "$WORKDIR/nbfc-linux"
-./autogen.sh
-./configure --prefix=/usr --sysconfdir=/etc --bindir=/usr/bin
-make
-sudo make install
+./autogen.sh > /dev/null
+./configure --prefix=/usr --sysconfdir=/etc --bindir=/usr/bin > /dev/null
+make > /dev/null
+sudo make install > /dev/null
 
 echo ">>> Building nbfc-qt from iswad-lab/nbfc-qt..."
 
 git clone --depth=1 https://github.com/iswad-lab/nbfc-qt "$WORKDIR/nbfc-qt"
 cd "$WORKDIR/nbfc-qt"
-make QT_VERSION=6
-sudo make install
+make QT_VERSION=6 > /dev/null
+sudo make install > /dev/null
 
 echo ">>> nbfc-linux and nbfc-qt installed successfully."
 
