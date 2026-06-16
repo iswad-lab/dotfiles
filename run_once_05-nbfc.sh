@@ -30,6 +30,17 @@ sudo make install
 
 echo ">>> nbfc-linux and nbfc-qt installed successfully."
 
+# Lock nbfc packages in IgnorePkg (built from source, not pacman)
+if grep -q "^IgnorePkg" /etc/pacman.conf; then
+  for pkg in nbfc-linux nbfc-qt; do
+    if ! grep -q "$pkg" /etc/pacman.conf; then
+      sudo sed -i "s/^IgnorePkg\s*=\s*/IgnorePkg = $pkg /" /etc/pacman.conf
+    fi
+  done
+else
+  sudo sed -i 's/^#IgnorePkg.*/IgnorePkg = nbfc-linux nbfc-qt/' /etc/pacman.conf
+fi
+
 echo ">>> Configuring nbfc profile and service..."
 
 # Copy custom fan profile
