@@ -29,3 +29,20 @@ make QT_VERSION=6
 sudo make install
 
 echo ">>> nbfc-linux and nbfc-qt installed successfully."
+
+echo ">>> Configuring nbfc profile and service..."
+
+# Copy custom fan profile
+sudo mkdir -p /usr/share/nbfc/configs
+sudo tee /usr/share/nbfc/configs/isma-nbfc.json > /dev/null < "$(chezmoi source-path)/isma-nbfc.json"
+
+# Write service config to use the profile
+sudo mkdir -p /etc/nbfc
+echo '{"SelectedConfigId": "isma-nbfc"}' | sudo tee /etc/nbfc/nbfc.json > /dev/null
+
+# Enable and restart service
+sudo systemctl daemon-reload
+sudo systemctl enable nbfc_service.service
+sudo systemctl restart nbfc_service.service
+
+echo ">>> NBFC setup complete."
