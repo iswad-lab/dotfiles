@@ -5,9 +5,9 @@
 # =============================================================================
 set -e
 
-SCRIPT_DIR="$(dirname "$(chezmoi source-path)")"
-PACMAN_LIST="$SCRIPT_DIR/packages.pacman"
-AUR_LIST="$SCRIPT_DIR/packages.aur"
+SOURCE_DIR="$(chezmoi source-path)"
+PACMAN_LIST="$SOURCE_DIR/packages.pacman"
+AUR_LIST="$SOURCE_DIR/packages.aur"
 
 parse_list() {
   grep -v '^\s*#' "$1" | grep -v '^\s*$' | awk '{print $1}'
