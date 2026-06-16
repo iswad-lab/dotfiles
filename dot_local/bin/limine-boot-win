@@ -1,0 +1,18 @@
+#!/bin/bash
+# One-time boot to Windows via Limine
+# Finds the Windows entry index automatically
+
+LIMINE_CONF="/boot/limine.conf"
+
+# Count entries before "Windows Boot Manager"
+# Limine counts all // prefix lines (including /// and ////)
+ENTRY=$(sed -n '/Windows Boot Manager/q;p' "$LIMINE_CONF" | grep -cP '^\s*/{2,}')
+
+if [ "$ENTRY" -eq 0 ] 2>/dev/null; then
+  echo "Windows entry not found in $LIMINE_CONF"
+  exit 1
+fi
+
+sudo sed -i "s/^default_entry: [0-9]*/default_entry: $ENTRY/" "$LIMINE_CONF"
+echo "Booting Windows (entry $ENTRY)..."
+sudo reboot

@@ -14,8 +14,9 @@ source /usr/share/cachyos-zsh-config/cachyos-config.zsh
 
 alias ff='fastfetch'
 
-alias ww="sudo efibootmgr -n 0000 && sudo reboot"
-alias win="sudo efibootmgr -n 0000 && sudo reboot"
-alias windows="sudo efibootmgr -n 0000 && sudo reboot"
+# One-time boot to Windows via Limine
+alias win="limine-boot-win"
+alias windows="limine-boot-win"
+alias ww="limine-boot-win"
 
 #alias ww="sudo grub-editenv - set next_entry='osprober-efi-6C6A-97E6' && sudo reboot"
