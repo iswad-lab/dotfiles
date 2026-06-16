@@ -19,5 +19,6 @@ alias win="limine-boot-win"
 alias windows="limine-boot-win"
 alias ww="limine-boot-win"
 alias pass="limine-boot-vfio"
+alias pp="limine-boot-vfio"
 
 #alias ww="sudo grub-editenv - set next_entry='osprober-efi-6C6A-97E6' && sudo reboot"
