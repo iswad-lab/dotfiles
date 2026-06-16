@@ -56,7 +56,7 @@ downgrade                   # rollback packages (Arch lifesaver)
 
 # --- AMD Hardware ------------------------------------------------------------
 amd-ucode                   # AMD processor microcode
-acpi_call                   # battery/chassis control
+acpi_call-dkms              # battery/chassis ACPI calls (provides acpi_call)
 # ryzenadj → AUR
 
 # --- Virtualization ----------------------------------------------------------
