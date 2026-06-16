@@ -41,8 +41,10 @@ sudo mkdir -p /etc/nbfc
 echo '{"SelectedConfigId": "isma-nbfc"}' | sudo tee /etc/nbfc/nbfc.json > /dev/null
 
 # Enable and restart service
+# Kill old process if hanging (nvidia sensor passthrough)
 sudo systemctl daemon-reload
+sudo pkill -9 nbfc_service 2>/dev/null || true
 sudo systemctl enable nbfc_service.service
-sudo systemctl restart nbfc_service.service
+sudo systemctl start nbfc_service.service
 
 echo ">>> NBFC setup complete."
