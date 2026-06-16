@@ -14,11 +14,11 @@ source /usr/share/cachyos-zsh-config/cachyos-config.zsh
 
 alias ff='fastfetch'
 
-# One-time boot to Windows via Limine
+# --- Boot to Windows (via Limine) ---
 alias win="limine-boot-win"
 alias windows="limine-boot-win"
 alias ww="limine-boot-win"
+
+# --- Boot to VFIO kernel (GPU passthrough) ---
 alias pass="limine-boot-vfio"
 alias pp="limine-boot-vfio"
-
-#alias ww="sudo grub-editenv - set next_entry='osprober-efi-6C6A-97E6' && sudo reboot"
