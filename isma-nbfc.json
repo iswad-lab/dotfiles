@@ -86,7 +86,7 @@
       "ResetRequired": true,
       "FanSpeedResetValue": 255,
       "FanDisplayName": "GPU fan",
-      "Sensors": ["amdgpu"],
+      "Sensors": ["@GPU"],
       "TemperatureThresholds": [
         {
           "UpThreshold": 49,
