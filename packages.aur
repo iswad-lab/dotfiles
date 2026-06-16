@@ -11,8 +11,8 @@ airwindows-consolidated-bin
 tal-reverb4-clap-bin
 zl-compressor-bin
 zl-equalizer-bin
-# nbfc-linux                # pending personal fork validation
-# nbfc-qt                   # pending personal fork validation
+# nbfc-linux                # built via run_once_05-nbfc.sh (fork iswad-lab)
+# nbfc-qt                   # built via run_once_05-nbfc.sh (fork iswad-lab)
 
 # --- Applications ------------------------------------------------------------
 vesktop-bin                 # Discord with native Wayland support
