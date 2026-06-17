@@ -19,7 +19,7 @@ echo ">>> Source:      $SOURCE"
 echo ">>> Destination: $DEST"
 echo ""
 
-rsync -av \
+rsync -a --info=progress2 --stats \
   --exclude='node_modules/' \
   --exclude='venv/' \
   --exclude='.venv/' \
@@ -27,7 +27,6 @@ rsync -av \
   --exclude='.Trash-1000/' \
   --exclude='08_VM/Iso_files/' \
   --exclude='.git/' \
-  --progress \
   "$SOURCE" "$DEST"
 
 echo ""
