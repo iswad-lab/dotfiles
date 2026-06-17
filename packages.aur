@@ -25,4 +25,3 @@ pcloud-drive
 # --- AMD Hardware ------------------------------------------------------------
 ryzenadj
 ryzen_smu-dkms-git
-acpi_call-dkms
