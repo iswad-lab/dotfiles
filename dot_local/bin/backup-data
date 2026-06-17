@@ -1,0 +1,34 @@
+#!/bin/bash
+# =============================================================================
+# backup-data — rsync DATA → CRUCIAL X8
+# Run manually when the external NVMe is connected
+# =============================================================================
+
+SOURCE="$HOME/DATA/"
+DEST="/run/media/iswad/CRUCIAL X8/Ismail/DATA_BACKUP/"
+
+# Check if destination is mounted
+if [ ! -d "$DEST" ]; then
+  echo "ERROR: CRUCIAL X8 is not mounted or DATA_BACKUP doesn't exist."
+  echo "Make sure the drive is connected."
+  exit 1
+fi
+
+echo ">>> Starting backup: DATA → CRUCIAL X8/Ismail/DATA_BACKUP"
+echo ">>> Source:      $SOURCE"
+echo ">>> Destination: $DEST"
+echo ""
+
+rsync -av \
+  --exclude='node_modules/' \
+  --exclude='venv/' \
+  --exclude='.venv/' \
+  --exclude='__pycache__/' \
+  --exclude='.Trash-1000/' \
+  --exclude='08_VM/Iso_files/' \
+  --exclude='.git/' \
+  --progress \
+  "$SOURCE" "$DEST"
+
+echo ""
+echo ">>> Backup complete: $(date)"

@@ -24,4 +24,4 @@ alias pass="limine-boot-vfio"
 alias pp="limine-boot-vfio"
 
 # --- Backup ---
-alias backup-data="rsync -avhP '/home/iswad/DATA/' '/run/media/iswad/CRUCIAL X8/Ismail/DATA_BACKUP/'"
+# backup-data commande disponible via ~/.local/bin/backup-data
