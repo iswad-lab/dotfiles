@@ -22,3 +22,6 @@ alias ww="limine-boot-win"
 # --- Boot to VFIO kernel (GPU passthrough) ---
 alias pass="limine-boot-vfio"
 alias pp="limine-boot-vfio"
+
+# --- Backup ---
+alias backup-data="rsync -avhP --delete /home/iswad/DATA/ '/run/media/iswad/CRUCIAL X8/Ismail/DATA_BACKUP/'"
