@@ -42,3 +42,7 @@ dotfiles/
 - `ff` — fastfetch
 - `win` / `ww` / `windows` — reboot to Windows (via Limine)
 - `pass` / `pp` — reboot to VFIO GPU passthrough kernel
+
+## Notes
+
+- **SSH keys** (`~/.ssh/id_*`) : backup manuelle avant réinstall — trop sensibles pour les dotfiles
