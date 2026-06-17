@@ -24,4 +24,4 @@ alias pass="limine-boot-vfio"
 alias pp="limine-boot-vfio"
 
 # --- Backup ---
-# backup-data commande disponible via ~/.local/bin/backup-data
+alias backup-data="bash /home/iswad/DATA/05_Code/Scripts/Linux/backup-data.sh"
