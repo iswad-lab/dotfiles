@@ -17,7 +17,13 @@ if grep -q "vfio_pci" "$MKINITCPIO"; then
 else
   echo "    Adding VFIO modules to mkinitcpio.conf..."
   # Append VFIO modules to existing MODULES (preserving current ones)
-  sudo sed -i 's/^MODULES=(\(.*\))/MODULES=(\1 vfio_pci vfio vfio_iommu_type1)/' "$MKINITCPIO"
+  if grep -q "^MODULES=()" "$MKINITCPIO"; then
+    # Empty MODULES — replace entirely
+    sudo sed -i 's/^MODULES=()/MODULES=(vfio_pci vfio vfio_iommu_type1)/' "$MKINITCPIO"
+  else
+    # Non-empty — append
+    sudo sed -i 's/^MODULES=(\(.*\))/MODULES=(\1 vfio_pci vfio vfio_iommu_type1)/' "$MKINITCPIO"
+  fi
 fi
 
 # ---------------------------------------------------------------------------
