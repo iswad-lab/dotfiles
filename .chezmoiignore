@@ -1,0 +1,8 @@
+# .chezmoiignore — files in the source dir that chezmoi should NOT deploy
+# By default, only files with dot_ prefix are deployed to ~/
+# This file explicitly excludes non-deployable assets
+
+isma-nbfc.json
+packages.pacman
+packages.aur
+README.md

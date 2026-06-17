@@ -5,9 +5,15 @@
 # =============================================================================
 set -e
 
-SOURCE_DIR="$(chezmoi source-path)"
-PACMAN_LIST="$SOURCE_DIR/packages.pacman"
-AUR_LIST="$SOURCE_DIR/packages.aur"
+# Ensure paru is available
+if ! command -v paru &>/dev/null; then
+  echo "ERROR: paru is not installed. Run install.sh first."
+  exit 1
+fi
+
+SCRIPT_DIR="$(chezmoi source-path)"
+PACMAN_LIST="$SCRIPT_DIR/packages.pacman"
+AUR_LIST="$SCRIPT_DIR/packages.aur"
 
 parse_list() {
   grep -v '^\s*#' "$1" | grep -v '^\s*$' | awk '{print $1}'

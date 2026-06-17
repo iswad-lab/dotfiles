@@ -16,7 +16,8 @@ if grep -q "vfio_pci" "$MKINITCPIO"; then
   echo "    VFIO modules already present in mkinitcpio.conf"
 else
   echo "    Adding VFIO modules to mkinitcpio.conf..."
-  sudo sed -i 's/^MODULES=([^)]*)/MODULES=(vfio_pci vfio vfio_iommu_type1)/' "$MKINITCPIO"
+  # Append VFIO modules to existing MODULES (preserving current ones)
+  sudo sed -i 's/^MODULES=(\(.*\))/MODULES=(\1 vfio_pci vfio vfio_iommu_type1)/' "$MKINITCPIO"
 fi
 
 # ---------------------------------------------------------------------------
@@ -30,7 +31,7 @@ sudo mkdir -p "$CMDLINE_DIR"
 if [ -f "$CMDLINE_FILE" ]; then
   echo "    $CMDLINE_FILE already exists, skipping"
 else
-  echo 'amd_iommu=on iommu=pt vfio-pci.ids=10de:249d,10de:228b' | sudo tee "$CMDLINE_FILE" > /dev/null
+  echo 'iommu=pt vfio-pci.ids=10de:249d,10de:228b' | sudo tee "$CMDLINE_FILE" > /dev/null
   echo "    Created $CMDLINE_FILE"
 fi
 
