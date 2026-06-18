@@ -25,3 +25,6 @@ pcloud-drive
 # --- AMD Hardware ------------------------------------------------------------
 ryzenadj
 ryzen_smu-dkms-git
+
+# --- GPU Passthrough ---------------------------------------------------------
+looking-glass          # Looking Glass (IVSHMEM host client)
