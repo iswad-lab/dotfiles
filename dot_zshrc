@@ -26,5 +26,9 @@ alias ww="limine-boot-win"
 alias pass="limine-boot-vfio"
 alias pp="limine-boot-vfio"
 
+# --- Boot to normal Linux kernel ---
+alias linux="limine-boot-linux"
+alias ll="limine-boot-linux"
+
 # --- Backup ---
 alias backup-data="bash /home/iswad/DATA/05_Code/Scripts/Linux/backup-data.sh"

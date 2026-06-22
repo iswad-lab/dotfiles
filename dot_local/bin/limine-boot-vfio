@@ -3,7 +3,7 @@
 
 LIMINE_CONF="/boot/limine.conf"
 
-ENTRY=$(sed -n '/linux-cachyos-vfio/q;p' "$LIMINE_CONF" | grep -cP '^\s*/{2,}')
+ENTRY=$(sudo sed -n '/linux-cachyos-vfio/q;p' "$LIMINE_CONF" | grep -cP '^\s*/{2,}')
 
 if [ "$ENTRY" -eq 0 ] 2>/dev/null; then
   echo "VFIO entry not found in $LIMINE_CONF"

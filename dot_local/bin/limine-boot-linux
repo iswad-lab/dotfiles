@@ -1,0 +1,17 @@
+#!/bin/bash
+# One-time boot to normal Linux kernel (non-VFIO)
+
+LIMINE_CONF="/boot/limine.conf"
+
+# Find the first non-VFIO linux-cachyos entry
+# Find the first non-VFIO linux-cachyos entry
+ENTRY=$(sudo sed -n '/\/\/linux-cachyos$/q;p' "$LIMINE_CONF" | grep -cP '^\s*/{2,}')
+
+if [ "$ENTRY" -eq 0 ] 2>/dev/null; then
+  echo "Normal Linux entry not found in $LIMINE_CONF"
+  exit 1
+fi
+
+sudo sed -i "s/^default_entry: [0-9]*/default_entry: $ENTRY/" "$LIMINE_CONF"
+echo "Booting normal Linux kernel (entry $ENTRY)..."
+sudo reboot
