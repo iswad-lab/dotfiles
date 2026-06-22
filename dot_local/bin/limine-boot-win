@@ -6,12 +6,12 @@ LIMINE_CONF="/boot/limine.conf"
 
 # Count entries before "Windows Boot Manager"
 # Limine counts all // prefix lines (including /// and ////)
-ENTRY=$(sudo sed -n '/Windows Boot Manager/q;p' "$LIMINE_CONF" | grep -cP '^\s*/{2,}')
-
-if [ "$ENTRY" -eq 0 ] 2>/dev/null; then
+if ! sudo grep -qm1 'Windows Boot Manager' "$LIMINE_CONF"; then
   echo "Windows entry not found in $LIMINE_CONF"
   exit 1
 fi
+
+ENTRY=$(sudo sed -n '/Windows Boot Manager/q;p' "$LIMINE_CONF" | grep -cP '^\s*/{2,}')
 
 sudo sed -i "s/^default_entry: [0-9]*/default_entry: $ENTRY/" "$LIMINE_CONF"
 echo "Booting Windows (entry $ENTRY)..."
