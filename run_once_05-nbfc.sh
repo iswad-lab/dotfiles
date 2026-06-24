@@ -46,14 +46,14 @@ echo ">>> Configuring nbfc profile and service..."
 # Copy custom fan profile
 sudo mkdir -p /usr/share/nbfc/configs
 
-if [ -f "$(chezmoi source-path 2>/dev/null)/iswad-nbfc.json" ]; then
-  sudo cp "$(chezmoi source-path)/iswad-nbfc.json" /usr/share/nbfc/configs/
-elif [ -f "$HOME/.local/share/chezmoi/iswad-nbfc.json" ]; then
-  sudo cp "$HOME/.local/share/chezmoi/iswad-nbfc.json" /usr/share/nbfc/configs/
-else
-  echo "ERROR: iswad-nbfc.json not found in chezmoi source"
+FAN_PROFILE="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/iswad-nbfc.json"
+
+if [ ! -f "$FAN_PROFILE" ]; then
+  echo "ERROR: iswad-nbfc.json not found at $FAN_PROFILE"
   exit 1
 fi
+
+sudo cp "$FAN_PROFILE" /usr/share/nbfc/configs/
 
 # Write service config to use the profile
 sudo mkdir -p /etc/nbfc

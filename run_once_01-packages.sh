@@ -11,7 +11,7 @@ if ! command -v paru &>/dev/null; then
   exit 1
 fi
 
-SCRIPT_DIR="$(chezmoi source-path)"
+SCRIPT_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
 PACMAN_LIST="$SCRIPT_DIR/packages.pacman"
 AUR_LIST="$SCRIPT_DIR/packages.aur"
 
