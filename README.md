@@ -55,9 +55,9 @@ dotfiles/
 | Alias | Action |
 |---|---|
 | `ff` | fastfetch |
-| `win` / `ww` / `windows` | One-time boot to Windows (via Limine) |
-| `pass` / `pp` | One-time boot to VFIO GPU passthrough kernel |
-| `linux` / `ll` | One-time boot to default Linux kernel |
+| `ww` / `win` / `windows` | One-time boot to Windows (via Limine) |
+| `pp` / `pass` | One-time boot to VFIO GPU passthrough kernel |
+| `ll` / `linux` | One-time boot to default Linux kernel |
 | `backup-data` | Backup DATA to external drive |
 
 ## Notes
