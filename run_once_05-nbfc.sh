@@ -46,18 +46,18 @@ echo ">>> Configuring nbfc profile and service..."
 # Copy custom fan profile
 sudo mkdir -p /usr/share/nbfc/configs
 
-if [ -f "$(chezmoi source-path 2>/dev/null)/isma-nbfc.json" ]; then
-  sudo cp "$(chezmoi source-path)/isma-nbfc.json" /usr/share/nbfc/configs/
-elif [ -f "$HOME/.local/share/chezmoi/isma-nbfc.json" ]; then
-  sudo cp "$HOME/.local/share/chezmoi/isma-nbfc.json" /usr/share/nbfc/configs/
+if [ -f "$(chezmoi source-path 2>/dev/null)/iswad-nbfc.json" ]; then
+  sudo cp "$(chezmoi source-path)/iswad-nbfc.json" /usr/share/nbfc/configs/
+elif [ -f "$HOME/.local/share/chezmoi/iswad-nbfc.json" ]; then
+  sudo cp "$HOME/.local/share/chezmoi/iswad-nbfc.json" /usr/share/nbfc/configs/
 else
-  echo "ERROR: isma-nbfc.json not found in chezmoi source"
+  echo "ERROR: iswad-nbfc.json not found in chezmoi source"
   exit 1
 fi
 
 # Write service config to use the profile
 sudo mkdir -p /etc/nbfc
-echo '{"SelectedConfigId": "isma-nbfc"}' | sudo tee /etc/nbfc/nbfc.json > /dev/null
+echo '{"SelectedConfigId": "iswad-nbfc"}' | sudo tee /etc/nbfc/nbfc.json > /dev/null
 
 # Enable and restart service
 sudo systemctl daemon-reload

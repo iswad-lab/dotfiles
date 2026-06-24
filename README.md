@@ -20,7 +20,7 @@ dotfiles/
 ├── run_once_05-nbfc.sh               # nbfc-linux + nbfc-qt (forks)
 ├── packages.pacman                   # official repo packages
 ├── packages.aur                      # AUR packages
-├── isma-nbfc.json                    # custom fan profile (NBFC)
+├── iswad-nbfc.json                    # custom fan profile (NBFC)
 ├── dot_zshrc                         # zsh aliases
 └── dot_local/
     └── bin/
