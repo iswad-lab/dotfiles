@@ -33,4 +33,7 @@ sudo pacman -S --needed --noconfirm $(parse_list "$PACMAN_LIST" | tr '\n' ' ')
 echo ">>> Installing AUR packages..."
 paru -S --needed --noconfirm $(parse_list "$AUR_LIST" | tr '\n' ' ')
 
+echo ">>> Adding user to realtime group for audio..."
+sudo usermod -aG realtime "$USER"
+
 echo ">>> Packages installed successfully."

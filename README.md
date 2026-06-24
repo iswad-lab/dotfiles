@@ -1,6 +1,6 @@
 # Dotfiles — Iswad
 
-Reproducible setup for **CachyOS x86_64** + KDE Plasma 6 + NVIDIA RTX 3070 / AMD Vega hybrid.
+Reproducible setup for **CachyOS x86_64** — KDE Plasma 6 (Wayland).
 
 ## Installation
 
@@ -28,21 +28,39 @@ dotfiles/
         └── limine-boot-vfio          # one-time boot to VFIO kernel
 ```
 
+## Hardware
+
+| Component | Model |
+|---|---|
+| **Laptop** | HP OMEN 15-en1xxx (15-en1022nf) |
+| **CPU** | AMD Ryzen 7 5800H (8C/16T, Zen 3) |
+| **iGPU** | AMD Radeon Graphics (Vega) |
+| **dGPU** | NVIDIA GeForce RTX 3070 Mobile (GA104, 8 GB GDDR6) |
+| **RAM** | 2× 16 GB DDR4-3200 |
+| **Storage** | SK Hynix 512 GB (NVMe) + Crucial 1 TB (NVMe) |
+| **Network** | Realtek RTL8111/8168 (Ethernet) + Intel Wi-Fi 6 AX200 |
+
 ## Stack
 
+- **OS**: Dualboot — Linux (CachyOS) + Windows 11
 - **Shell**: zsh + Powerlevel10k
 - **DE**: KDE Plasma 6 (Wayland)
-- **GPU**: NVIDIA RTX 3070 + AMD Vega (hybrid via envycontrol / VFIO)
-- **Audio**: Pipewire + REAPER + yabridge (Windows VST bridge)
+- **GPU**: NVIDIA RTX 3070 + AMD Vega — hybrid via envycontrol, VFIO passthrough for VM
+- **Audio**: Pipewire (JACK) + REAPER + yabridge (Windows VST bridge)
 - **Virtualization**: QEMU + virt-manager + distrobox
 - **Fan control**: nbfc-linux (fork iswad-lab)
 
 ## Aliases
 
-- `ff` — fastfetch
-- `win` / `ww` / `windows` — reboot to Windows (via Limine)
-- `pass` / `pp` — reboot to VFIO GPU passthrough kernel
+| Alias | Action |
+|---|---|
+| `ff` | fastfetch |
+| `win` / `ww` / `windows` | One-time boot to Windows (via Limine) |
+| `pass` / `pp` | One-time boot to VFIO GPU passthrough kernel |
+| `linux` / `ll` | One-time boot to default Linux kernel |
+| `backup-data` | Backup DATA to external drive |
 
 ## Notes
 
-- **SSH keys** (`~/.ssh/id_*`) : backup manuelle avant réinstall — trop sensibles pour les dotfiles
+- **SSH keys** (`~/.ssh/id_*`): backup manually before reinstall — too sensitive for dotfiles.
+- **KDE config** is intentionally not versioned (too volatile).
