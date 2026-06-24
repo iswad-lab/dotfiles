@@ -45,7 +45,7 @@ dotfiles/
 - **OS**: Dualboot — Linux (CachyOS) + Windows 11
 - **Shell**: zsh + Powerlevel10k
 - **DE**: KDE Plasma 6 (Wayland)
-- **GPU**: NVIDIA RTX 3070 + AMD Vega — hybrid via envycontrol, VFIO passthrough for VM
+- **GPU**: NVIDIA RTX 3070 + AMD Vega — VFIO passthrough for VM
 - **Audio**: Pipewire (JACK) + REAPER + yabridge (Windows VST bridge)
 - **Virtualization**: QEMU + virt-manager + distrobox
 - **Fan control**: nbfc-linux (fork iswad-lab)
