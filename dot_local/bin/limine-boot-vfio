@@ -1,5 +1,7 @@
 #!/bin/bash
-# One-time boot to VFIO (GPU passthrough) kernel entry
+# One-time boot to VFIO GPU passthrough kernel via Limine
+
+source "$HOME/.local/bin/.limine-common"
 
 LIMINE_CONF="/boot/limine.conf"
 
@@ -9,7 +11,4 @@ if ! sudo grep -qm1 'linux-cachyos-vfio' "$LIMINE_CONF"; then
 fi
 
 ENTRY=$(sudo sed -n '/linux-cachyos-vfio/q;p' "$LIMINE_CONF" | grep -cP '^\s*//[^/]')
-
-sudo sed -i "s/^default_entry: [0-9]*/default_entry: $ENTRY/" "$LIMINE_CONF"
-echo "Booting VFIO passthrough kernel (entry $ENTRY)..."
-sudo reboot
+set_entry "linux-cachyos-vfio" "$ENTRY"
