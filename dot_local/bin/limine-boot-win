@@ -1,11 +1,6 @@
 #!/bin/bash
-# One-time boot to Windows via Limine
-source "$HOME/.local/bin/.limine-common"
-
-if ! sudo grep -qm1 'Windows Boot Manager' "$LIMINE_CONF"; then
-  echo "Windows entry not found in $LIMINE_CONF"
-  exit 1
-fi
-
-ENTRY=$(sudo sed -n '/Windows Boot Manager/q;p' "$LIMINE_CONF" | grep -cP '^\s*//[^/]')
-set_entry "Windows Boot Manager" "$ENTRY"
+# One-time boot to Windows via UEFI BootNext
+WIN_ID="0000"
+sudo efibootmgr --bootnext "$WIN_ID" > /dev/null 2>&1
+echo "Booting Windows (BootNext $WIN_ID)..."
+sudo reboot

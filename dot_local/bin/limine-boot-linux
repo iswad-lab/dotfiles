@@ -1,5 +1,18 @@
 #!/bin/bash
-# One-time boot to default Linux kernel via Limine
-source "$HOME/.local/bin/.limine-common"
+# One-time boot to default Linux kernel
+# Restore Limine defaults + boot via UEFI BootNext
+LIMINE_CONF="/boot/limine.conf"
 
-set_entry "CachyOS/linux-cachyos" 0
+# Restore Limine to Linux entry
+sudo sed -i "s/^default_entry: [0-9]*/default_entry: 0/" "$LIMINE_CONF"
+EFIVAR_PATH="/sys/firmware/efi/efivars/LimineLastBootedEntry-513ee0d0-6e43-cb05-b272-f146a2fcb88a"
+sudo chattr -i "$EFIVAR_PATH" 2>/dev/null
+sudo /usr/bin/python3 -c "
+import os
+os.write(os.open('$EFIVAR_PATH', os.O_WRONLY), b'\x07\x00\x00\x00CachyOS/linux-cachyos\x00')
+" 2>/dev/null
+
+# Boot Limine via UEFI BootNext
+sudo efibootmgr --bootnext 0006 > /dev/null 2>&1
+echo "Booting Linux (entry 0)..."
+sudo reboot

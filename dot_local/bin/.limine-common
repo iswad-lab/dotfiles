@@ -1,27 +1,18 @@
 #!/bin/bash
-# Helper: set Limine one-time boot entry (EFI variable + default_entry)
-LIMINE_CONF="/boot/limine.conf"
-EFIVAR_PATH="/sys/firmware/efi/efivars/LimineLastBootedEntry-513ee0d0-6e43-cb05-b272-f146a2fcb88a"
+# Helper: set Limine one-time boot entry via efibootmgr
+# Uses UEFI BootNext for one-time boot (more reliable than Limine config)
 
 set_entry() {
   local entry_name="$1"
-  local entry_index="${2:-0}"
+  local efi_boot_id="$2"
 
-  # Set default_entry in config
-  sudo sed -i "s/^default_entry: [0-9]*/default_entry: $entry_index/" "$LIMINE_CONF"
+  if [ -z "$efi_boot_id" ]; then
+    echo "ERROR: EFI boot ID not specified"
+    exit 1
+  fi
 
-  # Override EFI variable (honored by remember_last_entry)
-  sudo chattr -i "$EFIVAR_PATH" 2>/dev/null || true
-  /usr/bin/python3 -c "
-import os
-data = b'\x07\x00\x00\x00' + b'$entry_name\x00'
-os.write(os.open('$EFIVAR_PATH', os.O_WRONLY), data)
-" 2>/dev/null || sudo /usr/bin/python3 -c "
-import os
-data = b'\x07\x00\x00\x00' + b'$entry_name\x00'
-os.write(os.open('$EFIVAR_PATH', os.O_WRONLY), data)
-" 2>/dev/null
+  sudo efibootmgr --bootnext "$efi_boot_id" > /dev/null 2>&1
 
-  echo "Booting: $entry_name (entry $entry_index)..."
+  echo "Booting: $entry_name (BootNext $efi_boot_id)..."
   sudo reboot
 }

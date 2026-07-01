@@ -1,6 +1,7 @@
 #!/bin/bash
-# One-time boot to VFIO GPU passthrough kernel via Limine
-source "$HOME/.local/bin/.limine-common"
+# One-time boot to VFIO GPU passthrough kernel
+# Boot Limine with VFIO entry selected
+LIMINE_CONF="/boot/limine.conf"
 
 if ! sudo grep -qm1 'linux-cachyos-vfio' "$LIMINE_CONF"; then
   echo "VFIO entry not found in $LIMINE_CONF"
@@ -8,4 +9,17 @@ if ! sudo grep -qm1 'linux-cachyos-vfio' "$LIMINE_CONF"; then
 fi
 
 ENTRY=$(sudo sed -n '/linux-cachyos-vfio/q;p' "$LIMINE_CONF" | grep -cP '^\s*//[^/]')
-set_entry "CachyOS/linux-cachyos-vfio" "$ENTRY"
+
+# Set Limine default + EFI var for this entry
+sudo sed -i "s/^default_entry: [0-9]*/default_entry: $ENTRY/" "$LIMINE_CONF"
+EFIVAR_PATH="/sys/firmware/efi/efivars/LimineLastBootedEntry-513ee0d0-6e43-cb05-b272-f146a2fcb88a"
+sudo chattr -i "$EFIVAR_PATH" 2>/dev/null
+sudo /usr/bin/python3 -c "
+import os
+os.write(os.open('$EFIVAR_PATH', os.O_WRONLY), b'\x07\x00\x00\x00CachyOS/linux-cachyos-vfio\x00')
+" 2>/dev/null
+
+# Boot Limine via UEFI BootNext
+sudo efibootmgr --bootnext 0006 > /dev/null 2>&1
+echo "Booting VFIO (entry $ENTRY)..."
+sudo reboot
