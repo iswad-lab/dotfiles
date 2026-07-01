@@ -11,24 +11,16 @@ set_entry() {
   sudo sed -i "s/^default_entry: [0-9]*/default_entry: $entry_index/" "$LIMINE_CONF"
 
   # Override EFI variable (honored by remember_last_entry)
-  # Python os.write works reliably with efivarfs (printf|dd does not)
-  python3 -c "
+  sudo chattr -i "$EFIVAR_PATH" 2>/dev/null || true
+  /usr/bin/python3 -c "
 import os
-data = b'\\x07\\x00\\x00\\x00' + b'$entry_name\\x00'
-fd = os.open('$EFIVAR_PATH', os.O_WRONLY)
-os.write(fd, data)
-os.close(fd)
-" 2>/dev/null || {
-    # Fallback: try with chmod if immutable
-    sudo chattr -i "$EFIVAR_PATH" 2>/dev/null
-    python3 -c "
+data = b'\x07\x00\x00\x00' + b'$entry_name\x00'
+os.write(os.open('$EFIVAR_PATH', os.O_WRONLY), data)
+" 2>/dev/null || sudo /usr/bin/python3 -c "
 import os
-data = b'\\x07\\x00\\x00\\x00' + b'$entry_name\\x00'
-fd = os.open('$EFIVAR_PATH', os.O_WRONLY)
-os.write(fd, data)
-os.close(fd)
+data = b'\x07\x00\x00\x00' + b'$entry_name\x00'
+os.write(os.open('$EFIVAR_PATH', os.O_WRONLY), data)
 " 2>/dev/null
-  }
 
   echo "Booting: $entry_name (entry $entry_index)..."
   sudo reboot
