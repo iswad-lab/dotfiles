@@ -1,0 +1,11 @@
+#!/bin/bash
+# One-time boot to default Linux kernel via Limine
+
+LIMINE_CONF="/boot/limine.conf"
+
+# The first // entry is the default Linux kernel (index 0)
+ENTRY=0
+
+sudo sed -i "s/^default_entry: [0-9]*/default_entry: $ENTRY/" "$LIMINE_CONF"
+echo "Booting Linux (entry $ENTRY)..."
+sudo reboot

@@ -8,7 +8,7 @@ if ! sudo grep -qm1 'linux-cachyos-vfio' "$LIMINE_CONF"; then
   exit 1
 fi
 
-ENTRY=$(sudo sed -n '/linux-cachyos-vfio/q;p' "$LIMINE_CONF" | grep -cP '^\s*/{2,}')
+ENTRY=$(sudo sed -n '/linux-cachyos-vfio/q;p' "$LIMINE_CONF" | grep -cP '^\s*//[^/]')
 
 sudo sed -i "s/^default_entry: [0-9]*/default_entry: $ENTRY/" "$LIMINE_CONF"
 echo "Booting VFIO passthrough kernel (entry $ENTRY)..."
