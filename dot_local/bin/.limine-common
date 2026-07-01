@@ -5,7 +5,12 @@ LIMINE_CONF="/boot/limine.conf"
 set_entry() {
   local entry_name="$1"
   local entry_index="${2:-0}"
+
+  # Disable remember_last_entry so default_entry is honored
+  sudo sed -i 's/^remember_last_entry: yes/remember_last_entry: no/' "$LIMINE_CONF"
+  # Set default entry
   sudo sed -i "s/^default_entry: [0-9]*/default_entry: $entry_index/" "$LIMINE_CONF"
+
   echo "Booting: $entry_name (entry $entry_index)..."
   sudo reboot
 }

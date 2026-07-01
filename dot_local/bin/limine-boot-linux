@@ -1,4 +1,10 @@
 #!/bin/bash
-# One-time boot to default Linux kernel via Limine
-source "$HOME/.local/bin/.limine-common"
-set_entry "linux-cachyos" 0
+# One-time boot to default Linux kernel (restores remember_last_entry)
+LIMINE_CONF="/boot/limine.conf"
+
+# Restore remember_last_entry when booting back to normal Linux
+sudo sed -i 's/^remember_last_entry: no/remember_last_entry: yes/' "$LIMINE_CONF"
+sudo sed -i "s/^default_entry: [0-9]*/default_entry: 0/" "$LIMINE_CONF"
+
+echo "Booting Linux (entry 0)..."
+sudo reboot
