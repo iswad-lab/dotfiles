@@ -1,10 +1,8 @@
 #!/bin/bash
 # One-time boot to VFIO GPU passthrough kernel via Limine
-
 source "$HOME/.local/bin/.limine-common"
 
 LIMINE_CONF="/boot/limine.conf"
-
 if ! sudo grep -qm1 'linux-cachyos-vfio' "$LIMINE_CONF"; then
   echo "VFIO entry not found in $LIMINE_CONF"
   exit 1
