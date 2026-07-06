@@ -37,10 +37,13 @@ SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="1", RUN+="/usr/local/b
 SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="0", RUN+="/usr/local/bin/ryzenadj-profile battery"
 EOF
 
-# Enable and start service
-sudo systemctl daemon-reload
+# Enable and start ryzenadj service
 sudo systemctl enable ryzenadj-profile.service
 sudo systemctl start ryzenadj-profile.service
+
+# Enable NVIDIA services (power management + suspend/resume)
+sudo systemctl enable --now nvidia-powerd.service 2>/dev/null || true
+sudo systemctl enable nvidia-suspend.service nvidia-resume.service 2>/dev/null || true
 
 # Reload udev rules
 sudo udevadm control --reload-rules
