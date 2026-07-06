@@ -72,8 +72,17 @@ case "${1:-auto}" in
         temp_cpu=$(sensors 2>/dev/null | grep -E "^Tctl" | awk '{print $2}' | tr -d '+')
         temp_igpu=$(sensors 2>/dev/null | grep -E "^edge" | awk '{print $2}' | tr -d '+')
 
+        # Detect active mode
+        if [ "$gov" = "performance" ]; then
+            mode_label="PERF MODE"
+        elif [ "$freq_khz" -le 2400000 ]; then
+            mode_label="BATTERY MODE"
+        else
+            mode_label="AC MODE"
+        fi
+
         echo "┌────────────────────────────────────────────┐"
-        printf "│ %-42s │\n" "Ryzen 5800H — Power Profile"
+        printf "│ %-42s │\n" "Ryzen 5800H — $mode_label"
         echo "├────────────────────────────────────────────┤"
         printf "│ CPU          │ %-26s │\n" "$gov @ ${freq_ghz}GHz"
 
