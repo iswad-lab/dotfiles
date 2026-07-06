@@ -1,52 +1,29 @@
 #!/bin/bash
-# =============================================================================
 # backup-data — rsync DATA → CRUCIAL X8
-# Run manually when the external NVMe is connected
-# =============================================================================
+# Minimal, clean output. Handles interruptions gracefully.
 
 SOURCE="$HOME/DATA/"
 DEST="/run/media/iswad/CRUCIAL X8/Ismail/DATA_BACKUP/"
 START=$(date +%s)
 
-# Colors (disable if not supported)
-if [ -t 1 ] && tput colors &>/dev/null; then
-  BOLD=$(tput bold)
-  GREEN=$(tput setaf 2)
-  YELLOW=$(tput setaf 3)
-  CYAN=$(tput setaf 6)
-  RESET=$(tput sgr0)
-else
-  BOLD=""; GREEN=""; YELLOW=""; CYAN=""; RESET=""
-fi
-
-echo "${BOLD}${CYAN}┌──────────────────────────────────────────────────────────┐${RESET}"
-echo "${BOLD}${CYAN}│${RESET}  ${BOLD}BACKUP DATA${RESET}"
-echo "${BOLD}${CYAN}├──────────────────────────────────────────────────────────┤${RESET}"
-
 # Check destination
 if [ ! -d "$DEST" ]; then
-  echo "${BOLD}${YELLOW}│${RESET}  ${RED}✗ CRUCIAL X8 not mounted${RESET}"
-  echo "${BOLD}${CYAN}└──────────────────────────────────────────────────────────┘${RESET}"
-  echo ""
-  echo "Make sure the drive is connected and mounted at:"
-  echo "  /run/media/iswad/CRUCIAL X8/"
+  echo "Error: CRUCIAL X8 not mounted"
+  echo "Expected at: $DEST"
   exit 1
 fi
 
-# Show source/dest info
-src_size=$(du -sh "$SOURCE" 2>/dev/null | awk '{print $1}')
-dest_avail=$(df -h "$DEST" 2>/dev/null | awk 'NR==2{print $4}')
-printf "│  ${BOLD}Source${RESET}      %-29s │\n" "$SOURCE"
-printf "│  ${BOLD}Dest${RESET}        %-29s │\n" "CRUCIAL X8/Ismail/DATA_BACKUP"
-printf "│  ${BOLD}Total data${RESET}  %-29s │\n" "${src_size}"
-printf "│  ${BOLD}Space free${RESET}  %-29s │\n" "${dest_avail}"
-echo "${BOLD}${CYAN}├──────────────────────────────────────────────────────────┤${RESET}"
-echo "${BOLD}${CYAN}│${RESET}  Syncing... (progress, speed, ETA shown below)"
-echo "${BOLD}${CYAN}└──────────────────────────────────────────────────────────┘${RESET}"
+echo "── Backup DATA ─────────────────────────────────────"
+echo ""
+printf "  Source   %s\n" "$SOURCE"
+printf "  Dest     CRUCIAL X8/Ismail/DATA_BACKUP\n"
+printf "  Data     %s\n" "$(du -sh "$SOURCE" 2>/dev/null | awk '{print $1}')"
+printf "  Free     %s\n" "$(df -h "$DEST" 2>/dev/null | awk 'NR==2{print $4}')"
 echo ""
 
-# Run rsync
-rsync -a --no-group --no-links --info=progress2 --stats \
+# Run rsync, capture exit code without set -e interference
+set +e
+rsync -a --no-group --no-links --info=progress2 \
   --exclude='node_modules/' \
   --exclude='venv/' \
   --exclude='.venv/' \
@@ -55,19 +32,17 @@ rsync -a --no-group --no-links --info=progress2 --stats \
   --exclude='08_VM/Iso_files/' \
   --exclude='.git/' \
   "$SOURCE" "$DEST" 2>&1 | grep -v "skipping non-regular"
+EXIT_CODE=${PIPESTATUS[0]}
+set -e
 
-RSYNC_EXIT=${PIPESTATUS[0]}
 END=$(date +%s)
 ELAPSED=$((END - START))
-MIN=$((ELAPSED / 60))
-SEC=$((ELAPSED % 60))
 
 echo ""
-echo "${BOLD}${CYAN}┌──────────────────────────────────────────────────────────┐${RESET}"
-if [ $RSYNC_EXIT -eq 0 ] || [ $RSYNC_EXIT -eq 24 ]; then
-  echo "${BOLD}${GREEN}│${RESET}  ${BOLD}✓ Backup complete${RESET}"
+if [ "$EXIT_CODE" -eq 0 ] || [ "$EXIT_CODE" -eq 24 ]; then
+  printf "  ✓ Done  (%dm %ds)\n" $((ELAPSED/60)) $((ELAPSED%60))
 else
-  echo "${BOLD}${YELLOW}│${RESET}  ${BOLD}⚠ Backup finished with warnings (exit code $RSYNC_EXIT)${RESET}"
+  printf "  ⚠ Finished (exit %d) — %dm %ds\n" "$EXIT_CODE" $((ELAPSED/60)) $((ELAPSED%60))
 fi
-printf "│  Time        %-29s │\n" "${MIN}m ${SEC}s"
-echo "${BOLD}${CYAN}└──────────────────────────────────────────────────────────┘${RESET}"
+echo ""
+echo "── $(date) ────────────────────────────"
