@@ -16,10 +16,10 @@ dotfiles/
 ├── run_once_01-packages.sh           # pacman + AUR packages
 ├── run_once_02-wine-staging.sh       # wine-staging 9.21 (yabridge compat)
 ├── run_once_03-vfio-setup.sh         # GPU passthrough (VFIO)
-├── run_once_04-libvirt-setup.sh      # libvirt services + groups
-├── run_once_05-looking-glass.sh      # Looking Glass shared memory
-├── run_once_06-nbfc.sh               # nbfc-linux + nbfc-qt (forks)
-├── run_once_07-ryzenadj.sh           # RyzenAdj power profiles
+├── run_once_04-nbfc.sh               # nbfc-linux + nbfc-qt (forks)
+├── run_once_05-power-profile.sh      # RyzenAdj + NVIDIA power profiles
+├── run_once_06-libvirt-setup.sh      # libvirt services + groups
+├── run_once_07-looking-glass.sh      # Looking Glass shared memory
 ├── packages.pacman                   # official repo packages
 ├── packages.aur                      # AUR packages
 ├── iswad-nbfc.json                    # custom fan profile (NBFC)

@@ -37,4 +37,4 @@ alias ll="limine-boot-linux"
 alias backup-data="bash /home/iswad/DATA/05_Code/Scripts/Linux/backup-data.sh"
 
 # --- Power profile ---
-alias power="sudo ryzenadj-profile info"
+alias power="sudo power-profile info"
