@@ -22,7 +22,7 @@ apply_perf() {
     echo performance 2>/dev/null | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor > /dev/null 2>&1
     echo 4465000 2>/dev/null | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq > /dev/null 2>&1
     ryzenadj --stapm-limit=54000 --fast-limit=65000 --slow-limit=54000 \
-             --apu-slow-limit=42000 --tctl-temp=100 > /dev/null 2>&1
+             --apu-slow-limit=42000 --tctl-temp=95 > /dev/null 2>&1
     nvidia-smi -rgc > /dev/null 2>&1 || true
     echo ">>> PERF mode: CPU 4.4 GHz / 54W / GPU unlocked"
     log "OK: CPU 4.4 GHz / 54W, GPU unlocked"
