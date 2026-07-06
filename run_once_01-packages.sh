@@ -27,11 +27,13 @@ fi
 
 # --- Official packages -------------------------------------------------------
 echo ">>> Installing pacman packages..."
-sudo pacman -S --needed --noconfirm $(parse_list "$PACMAN_LIST" | tr '\n' ' ')
+mapfile -t pacman_pkgs < <(parse_list "$PACMAN_LIST")
+sudo pacman -S --needed --noconfirm "${pacman_pkgs[@]}"
 
 # --- AUR packages ------------------------------------------------------------
 echo ">>> Installing AUR packages..."
-paru -S --needed --noconfirm $(parse_list "$AUR_LIST" | tr '\n' ' ')
+mapfile -t aur_pkgs < <(parse_list "$AUR_LIST")
+paru -S --needed --noconfirm "${aur_pkgs[@]}"
 
 echo ">>> Adding user to realtime group for audio..."
 sudo usermod -aG realtime "$USER"
