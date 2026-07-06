@@ -66,6 +66,7 @@ dotfiles/
 | `ll` / `linux` | One-time boot to default Linux kernel |
 | `backup-data` | Backup DATA to external drive |
 | `power` | Show power profile status (CPU/GPU temps, limits, fans) |
+| `perf` | Switch to performance mode (4.4 GHz / GPU unlocked) |
 
 ## Notes
 
