@@ -23,7 +23,10 @@ dotfiles/
 ├── packages.pacman                   # official repo packages
 ├── packages.aur                      # AUR packages
 ├── iswad-nbfc.json                    # custom fan profile (NBFC)
-├── dot_zshrc                         # zsh aliases
+├── dot_config/
+│   ├── gh/                           # GitHub CLI config
+│   └── *.rc                          # KDE Plasma config (shortcuts, panel, kwin)
+├── dot_zshrc                         # zsh aliases + profiles
 └── dot_local/
     └── bin/
         ├── limine-boot-win           # one-time boot to Windows
@@ -71,4 +74,4 @@ dotfiles/
 ## Notes
 
 - **SSH keys** (`~/.ssh/id_*`): backup manually before reinstall — too sensitive for dotfiles.
-- **KDE config** is intentionally not versioned (too volatile).
+- **KDE config** (shortcuts, panel, kwin) versioned in `dot_config/`.
