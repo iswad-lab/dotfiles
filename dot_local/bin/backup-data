@@ -6,19 +6,46 @@
 
 SOURCE="$HOME/DATA/"
 DEST="/run/media/iswad/CRUCIAL X8/Ismail/DATA_BACKUP/"
+START=$(date +%s)
 
-# Check if destination is mounted
+# Colors (disable if not supported)
+if [ -t 1 ] && tput colors &>/dev/null; then
+  BOLD=$(tput bold)
+  GREEN=$(tput setaf 2)
+  YELLOW=$(tput setaf 3)
+  CYAN=$(tput setaf 6)
+  RESET=$(tput sgr0)
+else
+  BOLD=""; GREEN=""; YELLOW=""; CYAN=""; RESET=""
+fi
+
+echo "${BOLD}${CYAN}┌──────────────────────────────────────────────────────────┐${RESET}"
+echo "${BOLD}${CYAN}│${RESET}  ${BOLD}BACKUP DATA${RESET}"
+echo "${BOLD}${CYAN}├──────────────────────────────────────────────────────────┤${RESET}"
+
+# Check destination
 if [ ! -d "$DEST" ]; then
-  echo "ERROR: CRUCIAL X8 is not mounted or DATA_BACKUP doesn't exist."
-  echo "Make sure the drive is connected."
+  echo "${BOLD}${YELLOW}│${RESET}  ${RED}✗ CRUCIAL X8 not mounted${RESET}"
+  echo "${BOLD}${CYAN}└──────────────────────────────────────────────────────────┘${RESET}"
+  echo ""
+  echo "Make sure the drive is connected and mounted at:"
+  echo "  /run/media/iswad/CRUCIAL X8/"
   exit 1
 fi
 
-echo ">>> Starting backup: DATA → CRUCIAL X8/Ismail/DATA_BACKUP"
-echo ">>> Source:      $SOURCE"
-echo ">>> Destination: $DEST"
+# Show source/dest info
+src_size=$(du -sh "$SOURCE" 2>/dev/null | awk '{print $1}')
+dest_avail=$(df -h "$DEST" 2>/dev/null | awk 'NR==2{print $4}')
+printf "│  ${BOLD}Source${RESET}      %-29s │\n" "$SOURCE"
+printf "│  ${BOLD}Dest${RESET}        %-29s │\n" "CRUCIAL X8/Ismail/DATA_BACKUP"
+printf "│  ${BOLD}Total data${RESET}  %-29s │\n" "${src_size}"
+printf "│  ${BOLD}Space free${RESET}  %-29s │\n" "${dest_avail}"
+echo "${BOLD}${CYAN}├──────────────────────────────────────────────────────────┤${RESET}"
+echo "${BOLD}${CYAN}│${RESET}  Syncing... (progress, speed, ETA shown below)"
+echo "${BOLD}${CYAN}└──────────────────────────────────────────────────────────┘${RESET}"
 echo ""
 
+# Run rsync
 rsync -a --no-group --no-links --info=progress2 --stats \
   --exclude='node_modules/' \
   --exclude='venv/' \
@@ -27,7 +54,20 @@ rsync -a --no-group --no-links --info=progress2 --stats \
   --exclude='.Trash-1000/' \
   --exclude='08_VM/Iso_files/' \
   --exclude='.git/' \
-  "$SOURCE" "$DEST"
+  "$SOURCE" "$DEST" 2>&1 | grep -v "skipping non-regular"
+
+RSYNC_EXIT=${PIPESTATUS[0]}
+END=$(date +%s)
+ELAPSED=$((END - START))
+MIN=$((ELAPSED / 60))
+SEC=$((ELAPSED % 60))
 
 echo ""
-echo ">>> Backup complete: $(date)"
+echo "${BOLD}${CYAN}┌──────────────────────────────────────────────────────────┐${RESET}"
+if [ $RSYNC_EXIT -eq 0 ] || [ $RSYNC_EXIT -eq 24 ]; then
+  echo "${BOLD}${GREEN}│${RESET}  ${BOLD}✓ Backup complete${RESET}"
+else
+  echo "${BOLD}${YELLOW}│${RESET}  ${BOLD}⚠ Backup finished with warnings (exit code $RSYNC_EXIT)${RESET}"
+fi
+printf "│  Time        %-29s │\n" "${MIN}m ${SEC}s"
+echo "${BOLD}${CYAN}└──────────────────────────────────────────────────────────┘${RESET}"
