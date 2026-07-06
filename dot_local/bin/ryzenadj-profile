@@ -50,8 +50,8 @@ case "${1:-auto}" in
         freq_khz=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2>/dev/null)
         freq_ghz=$(awk "BEGIN { printf \"%.2f\", $freq_khz / 1000000 }" 2>/dev/null)
 
-        temp_cpu=$(sensors 2>/dev/null | grep -E "Tctl|edge" | head -1 | awk '{print $2}' | tr -d '+')
-        temp_gpu=$(sensors 2>/dev/null | grep -E "Composite|junction" | head -1 | awk '{print $2}' | tr -d '+')
+        temp_cpu=$(sensors 2>/dev/null | grep -E "^Tctl" | awk '{print $2}' | tr -d '+')
+        temp_igpu=$(sensors 2>/dev/null | grep -E "^edge" | awk '{print $2}' | tr -d '+')
 
         # Display
         echo "┌────────────────────────────────────────────┐"
@@ -68,8 +68,8 @@ case "${1:-auto}" in
 
         echo "├────────────────────────────────────────────┤"
 
-        [ -n "$temp_cpu" ] && printf "│ CPU temp    │ %-26s │\n" "$temp_cpu"
-        [ -n "$temp_gpu" ] && printf "│ GPU temp    │ %-26s │\n" "$temp_gpu"
+        [ -n "$temp_cpu" ] && printf "│ %-12s │ %-26s │\n" "CPU temp" "$temp_cpu"
+        [ -n "$temp_igpu" ] && printf "│ %-12s │ %-26s │\n" "iGPU temp" "$temp_igpu"
 
         # NVIDIA (skip if unavailable — VFIO or iGPU mode)
         nvidia=""
