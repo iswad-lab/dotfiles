@@ -19,35 +19,36 @@ FREQ_BAT=2400000
 # ------ Performance (unlocked) ------
 apply_perf() {
     log "PERF profile: 4.4 GHz / 54W / GPU unlocked"
-    echo performance | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-    echo 4465000 | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq
+    echo performance 2>/dev/null | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor > /dev/null 2>&1
+    echo 4465000 2>/dev/null | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq > /dev/null 2>&1
     ryzenadj --stapm-limit=54000 --fast-limit=65000 --slow-limit=54000 \
-             --apu-slow-limit=42000 --tctl-temp=100
-    nvidia-smi -rgc 2>/dev/null || true
+             --apu-slow-limit=42000 --tctl-temp=100 > /dev/null 2>&1
+    nvidia-smi -rgc > /dev/null 2>&1 || true
+    echo ">>> PERF mode: CPU 4.4 GHz / 54W / GPU unlocked"
     log "OK: CPU 4.4 GHz / 54W, GPU unlocked"
 }
 
-# ------ AC (silent, balanced) ------
 apply_ac() {
     log "AC profile: 3.2 GHz / ${TDP_AC}W / GPU ${GPU_AC} MHz"
-    echo powersave | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-    echo "${FREQ_AC}" | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq
+    echo powersave 2>/dev/null | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor > /dev/null 2>&1
+    echo "${FREQ_AC}" 2>/dev/null | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq > /dev/null 2>&1
     ryzenadj --stapm-limit=${TDP_AC} --fast-limit=${FAST_AC} --slow-limit=${TDP_AC} \
-             --apu-slow-limit=30000 --tctl-temp=${TEMP_AC}
-    nvidia-smi -lgc 0,${GPU_AC} 2>/dev/null || true
-    nvidia-smi -lmc 405 2>/dev/null || true
+             --apu-slow-limit=30000 --tctl-temp=${TEMP_AC} > /dev/null 2>&1
+    nvidia-smi -lgc 0,${GPU_AC} > /dev/null 2>&1 || true
+    nvidia-smi -lmc 405 > /dev/null 2>&1 || true
+    echo ">>> AC mode: CPU 3.2 GHz / ${TDP_AC}W / GPU ${GPU_AC} MHz"
     log "OK: CPU 3.2 GHz / ${TDP_AC}W, GPU ${GPU_AC} MHz"
 }
 
-# ------ Battery (powersave) ------
 apply_battery() {
     log "Battery profile: ${FREQ_BAT} kHz / ${TDP_BAT}W / GPU ${GPU_BAT} MHz"
-    echo powersave | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-    echo "${FREQ_BAT}" | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq
+    echo powersave 2>/dev/null | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor > /dev/null 2>&1
+    echo "${FREQ_BAT}" 2>/dev/null | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq > /dev/null 2>&1
     ryzenadj --stapm-limit=${TDP_BAT} --fast-limit=${FAST_BAT} --slow-limit=${TDP_BAT} \
-             --apu-slow-limit=15000 --tctl-temp=${TEMP_BAT}
-    nvidia-smi -lgc 0,${GPU_BAT} 2>/dev/null || true
-    nvidia-smi -lmc 405 2>/dev/null || true
+             --apu-slow-limit=15000 --tctl-temp=${TEMP_BAT} > /dev/null 2>&1
+    nvidia-smi -lgc 0,${GPU_BAT} > /dev/null 2>&1 || true
+    nvidia-smi -lmc 405 > /dev/null 2>&1 || true
+    echo ">>> BATTERY mode: CPU ${FREQ_BAT} kHz / ${TDP_BAT}W / GPU ${GPU_BAT} MHz"
     log "OK: CPU ${FREQ_BAT} kHz / ${TDP_BAT}W, GPU ${GPU_BAT} MHz"
 }
 
