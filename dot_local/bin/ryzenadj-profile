@@ -1,10 +1,9 @@
 #!/bin/bash
 # ryzenadj-profile - CPU/GPU power profiles for AC/battery on Ryzen 5800H
-set -euo pipefail
+set -u
 
 log() { logger -t "ryzenadj-profile" "$@"; }
 
-# ------ Settings ------
 GPU_AC=1800
 GPU_BAT=900
 TDP_AC=25000
@@ -46,16 +45,52 @@ case "${1:-auto}" in
         [ "$online" = "1" ] && apply_ac || apply_battery
         ;;
     info)
-        echo "Governor:"
-        cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-        echo "Max freq:"
-        cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-        echo "Ryzenadj:"
-        ryzenadj --info 2>/dev/null | grep -E "LIMIT|VALUE" | head -8
-        echo "GPU:"
-        nvidia-smi --query-gpu=temperature.gpu,power.draw,clocks.current.graphics,pstate --format=csv 2>/dev/null || echo "(VFIO / unavailable)"
-        echo "NBFC:"
-        nbfc status 2>/dev/null | grep -E "Fan Speed|Temperature|Critical" | head -6
+        # Collect data
+        gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null)
+        freq_khz=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2>/dev/null)
+        freq_ghz=$(awk "BEGIN { printf \"%.2f\", $freq_khz / 1000000 }" 2>/dev/null)
+
+        temp_cpu=$(sensors 2>/dev/null | grep -E "Tctl|edge" | head -1 | awk '{print $2}' | tr -d '+')
+        temp_gpu=$(sensors 2>/dev/null | grep -E "Composite|junction" | head -1 | awk '{print $2}' | tr -d '+')
+
+        # Display
+        echo "┌────────────────────────────────────────────┐"
+        printf "│ %-42s │\n" "Ryzen 5800H — Power Profile"
+        echo "├────────────────────────────────────────────┤"
+        printf "│ CPU          │ %-26s │\n" "$gov @ ${freq_ghz}GHz"
+
+        limits=$(ryzenadj --info 2>/dev/null | grep -E "STAPM|PPT" | head -6)
+        while IFS='|' read -r raw; do
+            label=$(echo "$raw" | awk -F'|' '{print $2}' | xargs | sed 's/ LIMIT//;s/ VALUE//')
+            val=$(echo "$raw" | awk -F'|' '{print $3}' | xargs)
+            [ -n "$label" ] && printf "│ %-12s │ %s W        │\n" "$label" "$val"
+        done <<< "$limits"
+
+        echo "├────────────────────────────────────────────┤"
+
+        [ -n "$temp_cpu" ] && printf "│ CPU temp    │ %-26s │\n" "$temp_cpu"
+        [ -n "$temp_gpu" ] && printf "│ GPU temp    │ %-26s │\n" "$temp_gpu"
+
+        # NVIDIA (skip if unavailable — VFIO or iGPU mode)
+        nvidia=""
+        nvidia=$(nvidia-smi --query-gpu=temperature.gpu,power.draw --format=csv,noheader 2>/dev/null) || true
+        if echo "$nvidia" | grep -qP '^\d+'; then
+            echo "├────────────────────────────────────────────┤"
+            nvidia_temp=$(echo "$nvidia" | awk -F', ' '{print $1}')
+            nvidia_pwr=$(echo "$nvidia" | awk -F', ' '{print $2}')
+            printf "│ dGPU temp   │ %-26s │\n" "${nvidia_temp}°C"
+            printf "│ dGPU power  │ %-26s │\n" "$nvidia_pwr"
+        fi
+
+        echo "├────────────────────────────────────────────┤"
+
+        nbfc_data=$(nbfc status 2>/dev/null) || true
+        sys_temp=$(echo "$nbfc_data" | awk -F': ' '/Temperature/{t=$2} END{print t}')
+        fan_speed=$(echo "$nbfc_data" | awk -F': ' '/Current Fan Speed/{s=$2} END{print s}')
+        [ -n "$sys_temp" ] && printf "│ %-12s │ %-26s │\n" "System temp" "$sys_temp"
+        [ -n "$fan_speed" ] && printf "│ %-12s │ %-26s │\n" "Fans speed" "$fan_speed"
+
+        echo "└────────────────────────────────────────────┘"
         ;;
     *)
         echo "Usage: $0 {ac|battery|auto|info}"
