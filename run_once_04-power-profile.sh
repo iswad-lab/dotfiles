@@ -10,6 +10,12 @@ SCRIPT_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
 
 echo ">>> Installing power-profile..."
 
+# Disable power-profiles-daemon if present (conflicts with our setup)
+if [ -f /usr/lib/systemd/system/power-profiles-daemon.service ]; then
+  echo ">>> power-profiles-daemon detected, masking it..."
+  sudo systemctl mask --now power-profiles-daemon.service 2>/dev/null || true
+fi
+
 # Copy the profile script
 sudo cp "$SCRIPT_DIR/dot_local/bin/power-profile" /usr/local/bin/power-profile
 sudo chmod +x /usr/local/bin/power-profile
