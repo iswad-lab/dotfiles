@@ -74,11 +74,11 @@ case "${1:-auto}" in
 
         # Detect active mode
         if [ "$gov" = "performance" ]; then
-            mode_label="PERF MODE"
+            mode_label="PERF"
         elif [ "$freq_khz" -le 2400000 ]; then
-            mode_label="BATTERY MODE"
+            mode_label="BATTERY"
         else
-            mode_label="AC MODE"
+            mode_label="BALANCED (AC)"
         fi
 
         echo "┌────────────────────────────────────────────┐"
