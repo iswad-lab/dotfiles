@@ -36,7 +36,7 @@ apply_ac() {
              --apu-slow-limit=30000 --tctl-temp=${TEMP_AC} > /dev/null 2>&1
     nvidia-smi -lgc 0,${GPU_AC} > /dev/null 2>&1 || true
     nvidia-smi -lmc 405 > /dev/null 2>&1 || true
-    echo ">>> AC mode: CPU 3.2 GHz / ${TDP_AC}W / GPU ${GPU_AC} MHz"
+    echo ">>> AC mode: CPU 3.2 GHz / $((TDP_AC / 1000))W / GPU ${GPU_AC} MHz"
     log "OK: CPU 3.2 GHz / ${TDP_AC}W, GPU ${GPU_AC} MHz"
 }
 
@@ -48,7 +48,7 @@ apply_battery() {
              --apu-slow-limit=15000 --tctl-temp=${TEMP_BAT} > /dev/null 2>&1
     nvidia-smi -lgc 0,${GPU_BAT} > /dev/null 2>&1 || true
     nvidia-smi -lmc 405 > /dev/null 2>&1 || true
-    echo ">>> BATTERY mode: CPU ${FREQ_BAT} kHz / ${TDP_BAT}W / GPU ${GPU_BAT} MHz"
+    echo ">>> BATTERY mode: CPU $((FREQ_BAT / 1000000)).$(( (FREQ_BAT / 100000) % 10 )) GHz / $((TDP_BAT / 1000))W / GPU ${GPU_BAT} MHz"
     log "OK: CPU ${FREQ_BAT} kHz / ${TDP_BAT}W, GPU ${GPU_BAT} MHz"
 }
 
