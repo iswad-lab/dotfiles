@@ -53,14 +53,14 @@ apply_battery() {
 }
 
 # ------ Main ------
-case "${1:-auto}" in
+case "${1:-balanced}" in
     perf|performance)
         apply_perf  ;;
     ac|secteur)
         apply_ac  ;;
     battery|batterie)
         apply_battery  ;;
-    auto)
+    auto|balanced)
         online=$(cat /sys/class/power_supply/ACAD/online 2>/dev/null || echo 0)
         [ "$online" = "1" ] && apply_ac || apply_battery
         ;;
@@ -72,7 +72,6 @@ case "${1:-auto}" in
         temp_cpu=$(sensors 2>/dev/null | grep -E "^Tctl" | awk '{print $2}' | tr -d '+')
         temp_igpu=$(sensors 2>/dev/null | grep -E "^edge" | awk '{print $2}' | tr -d '+')
 
-        # Detect active mode
         # Detect active mode + power source
         online=$(cat /sys/class/power_supply/ACAD/online 2>/dev/null || echo 0)
         if [ "$online" = "1" ]; then
@@ -134,7 +133,7 @@ case "${1:-auto}" in
         echo "└────────────────────────────────────────────┘"
         ;;
     *)
-        echo "Usage: $0 {perf|ac|battery|auto|info}"
+        echo "Usage: $0 {balanced|perf|ac|battery|info}"
         exit 1
         ;;
 esac
