@@ -38,5 +38,5 @@ alias backup-data="bash /home/iswad/DATA/05_Code/Scripts/Linux/backup-data.sh"
 
 # --- Power profile ---
 alias power="sudo power-profile info"
-alias normal="sudo power-profile auto && sudo power-profile info"
+alias auto="sudo power-profile auto && sudo power-profile info"
 alias perf="sudo power-profile perf && sudo power-profile info"
