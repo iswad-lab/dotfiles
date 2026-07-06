@@ -1,9 +1,10 @@
 #!/bin/bash
-# power-profile - CPU/GPU power profiles for AC/battery on Ryzen 5800H
+# power-profile - CPU/GPU power profiles for Ryzen 5800H
 set -uo pipefail
 
-log() { logger -t "ryzenadj-profile" "$@"; }
+log() { logger -t "power-profile" "$@"; }
 
+# ------ Settings ------
 GPU_AC=1800
 GPU_BAT=400
 TDP_AC=25000
@@ -15,6 +16,18 @@ FAST_BAT=18000
 FREQ_AC=3200000
 FREQ_BAT=2400000
 
+# ------ Performance (unlocked) ------
+apply_perf() {
+    log "PERF profile: 4.4 GHz / 54W / GPU unlocked"
+    echo performance | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+    echo 4465000 | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq
+    ryzenadj --stapm-limit=54000 --fast-limit=65000 --slow-limit=54000 \
+             --apu-slow-limit=42000 --tctl-temp=100
+    nvidia-smi -rgc 2>/dev/null || true
+    log "OK: CPU 4.4 GHz / 54W, GPU unlocked"
+}
+
+# ------ AC (silent, balanced) ------
 apply_ac() {
     log "AC profile: 3.2 GHz / ${TDP_AC}W / GPU ${GPU_AC} MHz"
     echo powersave | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
@@ -26,6 +39,7 @@ apply_ac() {
     log "OK: CPU 3.2 GHz / ${TDP_AC}W, GPU ${GPU_AC} MHz"
 }
 
+# ------ Battery (powersave) ------
 apply_battery() {
     log "Battery profile: ${FREQ_BAT} kHz / ${TDP_BAT}W / GPU ${GPU_BAT} MHz"
     echo powersave | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
@@ -34,18 +48,22 @@ apply_battery() {
              --apu-slow-limit=15000 --tctl-temp=${TEMP_BAT}
     nvidia-smi -lgc 0,${GPU_BAT} 2>/dev/null || true
     nvidia-smi -lmc 405 2>/dev/null || true
-    log "OK: CPU 3.2 GHz / ${TDP_BAT}W, GPU ${GPU_BAT} MHz"
+    log "OK: CPU ${FREQ_BAT} kHz / ${TDP_BAT}W, GPU ${GPU_BAT} MHz"
 }
 
+# ------ Main ------
 case "${1:-auto}" in
-    ac|secteur)  apply_ac  ;;
-    battery|batterie)  apply_battery  ;;
+    perf|performance)
+        apply_perf  ;;
+    ac|secteur)
+        apply_ac  ;;
+    battery|batterie)
+        apply_battery  ;;
     auto)
         online=$(cat /sys/class/power_supply/ACAD/online 2>/dev/null || echo 0)
         [ "$online" = "1" ] && apply_ac || apply_battery
         ;;
     info)
-        # Collect data
         gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null)
         freq_khz=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2>/dev/null)
         freq_ghz=$(awk "BEGIN { printf \"%.2f\", $freq_khz / 1000000 }" 2>/dev/null)
@@ -53,7 +71,6 @@ case "${1:-auto}" in
         temp_cpu=$(sensors 2>/dev/null | grep -E "^Tctl" | awk '{print $2}' | tr -d '+')
         temp_igpu=$(sensors 2>/dev/null | grep -E "^edge" | awk '{print $2}' | tr -d '+')
 
-        # Display
         echo "┌────────────────────────────────────────────┐"
         printf "│ %-42s │\n" "Ryzen 5800H — Power Profile"
         echo "├────────────────────────────────────────────┤"
@@ -75,7 +92,7 @@ case "${1:-auto}" in
             printf "│ %-12s │ %-26s │\n" "iGPU temp" "$temp_igpu"
         fi
 
-        # NVIDIA (skip if unavailable — VFIO or iGPU mode)
+        # NVIDIA (skip if unavailable)
         nvidia=""
         nvidia=$(nvidia-smi --query-gpu=temperature.gpu,power.draw --format=csv,noheader 2>/dev/null) || true
         if echo "$nvidia" | grep -qP '^\d+'; then
@@ -101,7 +118,7 @@ case "${1:-auto}" in
         echo "└────────────────────────────────────────────┘"
         ;;
     *)
-        echo "Usage: $0 {ac|battery|auto|info}"
+        echo "Usage: $0 {perf|ac|battery|auto|info}"
         exit 1
         ;;
 esac
