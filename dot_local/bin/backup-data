@@ -19,7 +19,7 @@ echo ">>> Source:      $SOURCE"
 echo ">>> Destination: $DEST"
 echo ""
 
-rsync -a --no-group --info=progress2 --stats \
+rsync -a --no-group --no-links --info=progress2 --stats \
   --exclude='node_modules/' \
   --exclude='venv/' \
   --exclude='.venv/' \
