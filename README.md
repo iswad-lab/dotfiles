@@ -26,14 +26,14 @@ dotfiles/
 ├── dot_config/
 │   ├── gh/                           # GitHub CLI config
 │   └── *.rc                          # KDE Plasma config (shortcuts, panel, kwin)
-├── dot_zshrc                         # zsh aliases + profiles
-└── dot_local/
-    └── bin/
-        ├── limine-boot-win           # one-time boot to Windows
-        ├── limine-boot-vfio          # one-time boot to VFIO kernel
-        ├── limine-boot-linux         # restore boot to Linux
-        ├── backup-data               # backup DATA to external drive
-        └── power-profile             # CPU/GPU power management
+├── dot_local/
+│   ├── bin/                          # boot scripts, profiles
+│   │   ├── limine-boot-win           # one-time boot to Windows
+│   │   ├── limine-boot-vfio          # one-time boot to VFIO kernel
+│   │   ├── limine-boot-linux         # restore boot to Linux
+│   │   ├── backup-data               # backup DATA to external drive
+│   │   └── power-profile             # CPU/GPU power management
+│   └── share/plasma/plasmoids/       # KDE widgets (thermal monitor, salat)
 ```
 
 ## Hardware
@@ -69,6 +69,7 @@ dotfiles/
 | `ll` / `linux` | One-time boot to default Linux kernel |
 | `backup-data` | Backup DATA to external drive |
 | `power` | Show power profile status (CPU/GPU temps, limits, fans) |
+| `balanced` | Reset to balanced profile (auto AC/battery) |
 | `perf` | Switch to performance mode (4.4 GHz / GPU unlocked) |
 
 ## Notes
