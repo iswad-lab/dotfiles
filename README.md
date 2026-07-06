@@ -27,7 +27,10 @@ dotfiles/
 └── dot_local/
     └── bin/
         ├── limine-boot-win           # one-time boot to Windows
-        └── limine-boot-vfio          # one-time boot to VFIO kernel
+        ├── limine-boot-vfio          # one-time boot to VFIO kernel
+        ├── limine-boot-linux         # restore boot to Linux
+        ├── backup-data               # backup DATA to external drive
+        └── power-profile             # CPU/GPU power management
 ```
 
 ## Hardware
@@ -51,6 +54,7 @@ dotfiles/
 - **Audio**: Pipewire (JACK) + REAPER + yabridge (Windows VST bridge)
 - **Virtualization**: QEMU + virt-manager + distrobox
 - **Fan control**: nbfc-linux (fork iswad-lab)
+- **Power mgmt**: RyzenAdj + NVIDIA power profiles (AC/battery auto)
 
 ## Aliases
 
@@ -61,6 +65,7 @@ dotfiles/
 | `pp` / `pass` | One-time boot to VFIO GPU passthrough kernel |
 | `ll` / `linux` | One-time boot to default Linux kernel |
 | `backup-data` | Backup DATA to external drive |
+| `power` | Show power profile status (CPU/GPU temps, limits, fans) |
 
 ## Notes
 
