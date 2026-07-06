@@ -5,15 +5,15 @@ set -uo pipefail
 log() { logger -t "ryzenadj-profile" "$@"; }
 
 GPU_AC=1800
-GPU_BAT=900
+GPU_BAT=400
 TDP_AC=25000
-TDP_BAT=20000
+TDP_BAT=15000
 TEMP_AC=85
-TEMP_BAT=75
+TEMP_BAT=65
 FAST_AC=30000
-FAST_BAT=25000
+FAST_BAT=18000
 FREQ_AC=3200000
-FREQ_BAT=3200000
+FREQ_BAT=2400000
 
 apply_ac() {
     log "AC profile: 3.2 GHz / ${TDP_AC}W / GPU ${GPU_AC} MHz"
@@ -27,7 +27,7 @@ apply_ac() {
 }
 
 apply_battery() {
-    log "Battery profile: 3.2 GHz / ${TDP_BAT}W / GPU ${GPU_BAT} MHz"
+    log "Battery profile: ${FREQ_BAT} kHz / ${TDP_BAT}W / GPU ${GPU_BAT} MHz"
     echo powersave | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
     echo "${FREQ_BAT}" | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq
     ryzenadj --stapm-limit=${TDP_BAT} --fast-limit=${FAST_BAT} --slow-limit=${TDP_BAT} \
