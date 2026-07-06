@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# run_once_06-looking-glass.sh
+# run_once_07-looking-glass.sh
 # Run once by chezmoi (re-runs if this file changes)
 # Looking Glass — shared memory + hugepages for GPU passthrough display
 # =============================================================================

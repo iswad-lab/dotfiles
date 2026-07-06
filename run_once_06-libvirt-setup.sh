@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# run_once_03-libvirt-setup.sh
+# run_once_06-libvirt-setup.sh
 # Run once by chezmoi (re-runs if this file changes)
 # Post-install configuration for libvirt / QEMU
 # =============================================================================

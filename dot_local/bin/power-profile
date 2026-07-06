@@ -1,6 +1,6 @@
 #!/bin/bash
-# ryzenadj-profile - CPU/GPU power profiles for AC/battery on Ryzen 5800H
-set -u
+# power-profile - CPU/GPU power profiles for AC/battery on Ryzen 5800H
+set -uo pipefail
 
 log() { logger -t "ryzenadj-profile" "$@"; }
 
@@ -68,8 +68,12 @@ case "${1:-auto}" in
 
         echo "├────────────────────────────────────────────┤"
 
-        [ -n "$temp_cpu" ] && printf "│ %-12s │ %-26s │\n" "CPU temp" "$temp_cpu"
-        [ -n "$temp_igpu" ] && printf "│ %-12s │ %-26s │\n" "iGPU temp" "$temp_igpu"
+        if [ -n "$temp_cpu" ]; then
+            printf "│ %-12s │ %-26s │\n" "CPU temp" "$temp_cpu"
+        fi
+        if [ -n "$temp_igpu" ]; then
+            printf "│ %-12s │ %-26s │\n" "iGPU temp" "$temp_igpu"
+        fi
 
         # NVIDIA (skip if unavailable — VFIO or iGPU mode)
         nvidia=""
@@ -87,8 +91,12 @@ case "${1:-auto}" in
         nbfc_data=$(nbfc status 2>/dev/null) || true
         sys_temp=$(echo "$nbfc_data" | awk -F': ' '/Temperature/{t=$2} END{print t}')
         fan_speed=$(echo "$nbfc_data" | awk -F': ' '/Current Fan Speed/{s=$2} END{print s}')
-        [ -n "$sys_temp" ] && printf "│ %-12s │ %-26s │\n" "System temp" "$sys_temp"
-        [ -n "$fan_speed" ] && printf "│ %-12s │ %-26s │\n" "Fans speed" "$fan_speed"
+        if [ -n "$sys_temp" ]; then
+            printf "│ %-12s │ %-26s │\n" "System temp" "$sys_temp"
+        fi
+        if [ -n "$fan_speed" ]; then
+            printf "│ %-12s │ %-26s │\n" "Fans speed" "$fan_speed"
+        fi
 
         echo "└────────────────────────────────────────────┘"
         ;;

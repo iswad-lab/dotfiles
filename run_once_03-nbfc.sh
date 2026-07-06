@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# run_once_05-nbfc.sh
+# run_once_03-nbfc.sh
 # Run once by chezmoi (re-runs if this file changes)
 # Build & install nbfc-linux and nbfc-qt from iswad-lab forks
 # =============================================================================

@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# run_once_05-power-profile.sh
+# run_once_04-power-profile.sh
 # Run once by chezmoi (re-runs if this file changes)
 # Install power-profile service + udev rule (RyzenAdj + NVIDIA + CPU governor)
 # =============================================================================
