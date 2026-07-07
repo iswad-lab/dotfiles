@@ -43,8 +43,8 @@ EOF
 
 # Write udev rule for AC plug/unplug
 sudo tee /etc/udev/rules.d/99-power-profile.rules > /dev/null << 'EOF'
-SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="1", RUN+="/usr/local/bin/power-profile ac"
-SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="0", RUN+="/usr/local/bin/power-profile battery"
+SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="1", RUN+="/usr/bin/systemd-run --no-block --unit=power-profile-switch /usr/local/bin/power-profile ac"
+SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="0", RUN+="/usr/bin/systemd-run --no-block --unit=power-profile-switch /usr/local/bin/power-profile battery"
 EOF
 
 # Set swappiness to 10 (better for NVMe, avoid unnecessary writes)
