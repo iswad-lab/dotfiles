@@ -47,6 +47,10 @@ SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="1", RUN+="/usr/local/b
 SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="0", RUN+="/usr/local/bin/power-profile battery"
 EOF
 
+# Set swappiness to 10 (better for NVMe, avoid unnecessary writes)
+echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf > /dev/null
+sudo sysctl -w vm.swappiness=10 > /dev/null
+
 # Enable and start service
 sudo systemctl daemon-reload
 sudo systemctl enable power-profile.service
