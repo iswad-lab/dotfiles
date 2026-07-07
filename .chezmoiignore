@@ -6,3 +6,6 @@ iswad-nbfc.json
 packages.pacman
 packages.aur
 README.md
+
+# Local secrets (API keys, tokens) — never versioned
+dot_config/zsh/secrets

@@ -20,17 +20,16 @@ source /usr/share/cachyos-zsh-config/cachyos-config.zsh
 
 alias ff='fastfetch'
 
+# Source local secrets (API keys, tokens) — not versioned
+[[ -f ~/.config/zsh/secrets ]] && source ~/.config/zsh/secrets
+
 # --- Boot to Windows (via Limine) ---
-alias win="limine-boot-win"
-alias windows="limine-boot-win"
 alias ww="limine-boot-win"
 
 # --- Boot to VFIO kernel (GPU passthrough) ---
-alias pass="limine-boot-vfio"
 alias pp="limine-boot-vfio"
 
 # --- Boot to default Linux kernel ---
-alias linux="limine-boot-linux"
 alias ll="limine-boot-linux"
 
 # --- Backup ---
