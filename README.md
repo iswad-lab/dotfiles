@@ -58,15 +58,16 @@ dotfiles/
 - **Virtualization**: QEMU + virt-manager + distrobox
 - **Fan control**: nbfc-linux (fork iswad-lab)
 - **Power mgmt**: RyzenAdj + NVIDIA power profiles (AC/battery auto)
+- **Peripherals**: Logitech MX Master 3S (logiops)
 
 ## Aliases
 
 | Alias | Action |
 |---|---|
 | `ff` | fastfetch |
-| `ww` / `win` / `windows` | One-time boot to Windows (via Limine) |
-| `pp` / `pass` | One-time boot to VFIO GPU passthrough kernel |
-| `ll` / `linux` | One-time boot to default Linux kernel |
+| `ww` | One-time boot to Windows |
+| `pp` | One-time boot to VFIO GPU passthrough kernel |
+| `ll` | One-time boot to default Linux kernel |
 | `backup-data` | Backup DATA to external drive |
 | `power` | Show power profile status (CPU/GPU temps, limits, fans) |
 | `balanced` | Reset to balanced profile (auto AC/battery) |
