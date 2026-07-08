@@ -33,8 +33,8 @@ apply_perf() {
     write_cpu_sysfs scaling_governor performance
     write_cpu_sysfs scaling_max_freq 4465000
     write_cpu_sysfs energy_performance_preference performance
-    ryzenadj --stapm-limit=54000 --fast-limit=65000 --slow-limit=54000 \
-             --apu-slow-limit=42000 --tctl-temp=90 > /dev/null 2>&1
+    /usr/bin/ryzenadj --stapm-limit=54000 --fast-limit=65000 --slow-limit=54000 \
+             --apu-slow-limit=42000 --tctl-temp=90 || log "WARN: ryzenadj perf failed"
     nvidia-smi -rgc > /dev/null 2>&1 || true
     echo ">>> PERF mode: CPU 4.4 GHz / 54W / GPU unlocked"
     log "OK: CPU 4.4 GHz / 54W, GPU unlocked"
@@ -45,8 +45,8 @@ apply_ac() {
     write_cpu_sysfs scaling_governor powersave
     write_cpu_sysfs scaling_max_freq "${FREQ_AC}"
     write_cpu_sysfs energy_performance_preference balance_power
-    ryzenadj --stapm-limit=${TDP_AC} --fast-limit=${FAST_AC} --slow-limit=${TDP_AC} \
-             --apu-slow-limit=30000 --tctl-temp=${TEMP_AC} > /dev/null 2>&1
+    /usr/bin/ryzenadj --stapm-limit=${TDP_AC} --fast-limit=${FAST_AC} --slow-limit=${TDP_AC} \
+             --apu-slow-limit=30000 --tctl-temp=${TEMP_AC} 2>&1 || log "WARN: ryzenadj AC failed"
     nvidia-smi -lgc 0,${GPU_AC} > /dev/null 2>&1 || true
     nvidia-smi -lmc 405 > /dev/null 2>&1 || true
     echo ">>> AC mode: CPU 3.2 GHz / $((TDP_AC / 1000))W / GPU ${GPU_AC} MHz"
@@ -58,8 +58,8 @@ apply_battery() {
     write_cpu_sysfs scaling_governor powersave
     write_cpu_sysfs scaling_max_freq "${FREQ_BAT}"
     write_cpu_sysfs energy_performance_preference power
-    ryzenadj --stapm-limit=${TDP_BAT} --fast-limit=${FAST_BAT} --slow-limit=${TDP_BAT} \
-             --apu-slow-limit=15000 --tctl-temp=${TEMP_BAT} > /dev/null 2>&1
+    /usr/bin/ryzenadj --stapm-limit=${TDP_BAT} --fast-limit=${FAST_BAT} --slow-limit=${TDP_BAT} \
+             --apu-slow-limit=15000 --tctl-temp=${TEMP_BAT} 2>&1 || log "WARN: ryzenadj battery failed"
     nvidia-smi -lgc 0,${GPU_BAT} > /dev/null 2>&1 || true
     nvidia-smi -lmc 405 > /dev/null 2>&1 || true
     echo ">>> BATTERY mode: CPU $((FREQ_BAT / 1000000)).$(( (FREQ_BAT / 100000) % 10 )) GHz / $((TDP_BAT / 1000))W / GPU ${GPU_BAT} MHz"
