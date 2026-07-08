@@ -38,4 +38,39 @@ paru -S --needed --noconfirm "${aur_pkgs[@]}"
 echo ">>> Adding user to realtime group for audio..."
 sudo usermod -aG realtime "$USER"
 
+# --- Logitech mouse (MX Master 3S) ------------------------------------------
+if command -v logid &>/dev/null; then
+  echo ">>> Configuring Logitech MX Master 3S..."
+  sudo tee /etc/logid.cfg > /dev/null << 'EOF'
+devices: (
+{
+    name: "MX Master 3S";
+    smartshift: { on: true; threshold: 30; };
+    hiresscroll: { hires: false; invert: false; target: false; };
+    dpi: 1000;
+    buttons: (
+        {
+            cid: 0xc4;
+            action = {
+                type: "Gestures";
+                gestures: (
+                    { direction: "None"; mode: "OnRelease"; action = { type: "Keypress"; keys: ["KEY_PLAYPAUSE"]; }; },
+                    { direction: "Up"; mode: "OnInterval"; interval: 50; action = { type: "Keypress"; keys: ["KEY_VOLUMEUP"]; }; },
+                    { direction: "Down"; mode: "OnInterval"; interval: 50; action = { type: "Keypress"; keys: ["KEY_VOLUMEDOWN"]; }; },
+                    { direction: "Right"; mode: "OnRelease"; action = { type: "Keypress"; keys: ["KEY_NEXTSONG"]; }; },
+                    { direction: "Left"; mode: "OnRelease"; action = { type: "Keypress"; keys: ["KEY_PREVIOUSSONG"]; }; }
+                );
+            };
+        },
+        {
+            cid: 0xc3;
+            action = { type: "Keypress"; keys: ["KEY_LEFTMETA", "KEY_Z"]; };
+        }
+    );
+}
+);
+EOF
+  sudo systemctl enable --now logid.service 2>/dev/null || true
+fi
+
 echo ">>> Packages installed successfully."

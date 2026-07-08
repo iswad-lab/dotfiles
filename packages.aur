@@ -28,3 +28,6 @@ ryzen_smu-dkms-git
 
 # --- GPU Passthrough ---------------------------------------------------------
 looking-glass          # Looking Glass (IVSHMEM host client)
+
+# --- Peripherals -------------------------------------------------------------
+logiops                # Logitech mouse config (MX Master 3S)
