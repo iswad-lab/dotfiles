@@ -12,7 +12,8 @@ sh -c "$(curl -fsLS https://raw.githubusercontent.com/iswad-lab/dotfiles/main/in
 
 ```
 dotfiles/
-├── install.sh                        # bootstrap (paru + chezmoi + apply)
+├── install.sh                        # bootstrap (paru + chezmoi + apply, --dry-run)
+├── validate.sh                       # post-install verification script
 ├── run_once_01-packages.sh           # pacman + AUR packages
 ├── run_once_02-wine-staging.sh       # wine-staging 9.21 (yabridge compat)
 ├── run_once_03-nbfc.sh               # nbfc-linux + nbfc-qt (forks)

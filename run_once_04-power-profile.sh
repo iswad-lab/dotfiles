@@ -47,9 +47,12 @@ SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="1", RUN+="/usr/bin/sys
 SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="0", RUN+="/usr/bin/systemd-run --no-block --unit=power-profile-switch /usr/local/bin/power-profile battery"
 EOF
 
-# Set swappiness to 10 (better for NVMe, avoid unnecessary writes)
-echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf > /dev/null
-sudo sysctl -w vm.swappiness=10 > /dev/null
+# Set swappiness (lower = avoid disk swap, good for NVMe)
+# Note: skipped if zram is active (zram prefers higher swappiness)
+if ! lsblk | grep -q zram; then
+  echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf > /dev/null
+  sudo sysctl -w vm.swappiness=10 > /dev/null
+fi
 
 # Enable and start service
 sudo systemctl daemon-reload
