@@ -64,3 +64,5 @@ else
 
   # Add VFIO entry using python helper (more reliable than sed)
   sudo /usr/bin/python3 "$SCRIPT_DIR/dot_local/bin/.add-vfio-entry" "$LIMINE_CONF"
+  echo "    VFIO Limine entry added"
+  fi
