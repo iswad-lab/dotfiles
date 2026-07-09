@@ -34,6 +34,9 @@ echo "  ✓ Not root"
 # Cache sudo password (one prompt for the whole install)
 echo ">>> Sudo access required (enter password once)..."
 sudo -v
+# Keep sudo timestamp alive during potentially long operations (paru build)
+(sudo -v && while true; do sleep 60; sudo -v; done) &>/dev/null &
+KEEPER=$!
 echo "  ✓ Sudo OK"
 
 # Check internet
@@ -79,6 +82,9 @@ fi
 
 echo ""
 echo ">>> Done. Restart your session to apply all changes."
+
+# Kill sudo timestamp keeper
+kill "$KEEPER" 2>/dev/null || true
 echo ""
 
 # Run validation (download from repo, run locally)

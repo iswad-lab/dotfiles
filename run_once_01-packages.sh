@@ -15,6 +15,11 @@ SCRIPT_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
 PACMAN_LIST="$SCRIPT_DIR/packages.pacman"
 AUR_LIST="$SCRIPT_DIR/packages.aur"
 
+# Ensure passwordless sudo for wheel group (extends installer behavior)
+if ! sudo grep -q "%wheel.*NOPASSWD" /etc/sudoers.d/* 2>/dev/null; then
+  echo "%wheel ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/99-wheel-nopasswd > /dev/null
+fi
+
 parse_list() {
   grep -v '^\s*#' "$1" | grep -v '^\s*$' | awk '{print $1}'
 }
@@ -37,6 +42,10 @@ paru -S --needed --noconfirm "${aur_pkgs[@]}"
 
 echo ">>> Adding user to realtime group for audio..."
 sudo usermod -aG realtime "$USER"
+
+# Ensure user is in wheel group for passwordless sudo
+echo ">>> Ensuring user is in wheel group..."
+sudo usermod -aG wheel "$USER"
 
 # --- Logitech mouse (MX Master 3S) ------------------------------------------
 if command -v logid &>/dev/null; then
