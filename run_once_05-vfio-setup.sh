@@ -18,6 +18,8 @@ if grep -q "vfio_pci" "$MKINITCPIO"; then
   echo "    VFIO modules already present in mkinitcpio.conf"
 else
   echo "    Adding VFIO modules to mkinitcpio.conf..."
+  # Backup before modifying
+  sudo cp "$MKINITCPIO" "${MKINITCPIO}.bak"
   # Append VFIO modules to existing MODULES (preserving current ones)
   if grep -q "^MODULES=()" "$MKINITCPIO"; then
     # Empty MODULES — replace entirely
