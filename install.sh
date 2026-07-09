@@ -24,19 +24,19 @@ if [ ! -f /etc/arch-release ] && [ ! -f /etc/cachyos-release ]; then
 fi
 echo "  ✓ Arch / CachyOS detected"
 
+# Check not running as root (makepkg refuses)
+if [ "$(id -u)" = "0" ]; then
+  echo "ERROR: Do not run as root. Run as a normal user with sudo access."
+  exit 1
+fi
+echo "  ✓ Not root"
+
 # Check internet
 if ! ping -c1 archlinux.org &>/dev/null 2>&1; then
   echo "ERROR: No internet connection."
   exit 1
 fi
 echo "  ✓ Internet OK"
-
-# Check sudo
-if ! sudo -n true 2>/dev/null; then
-  echo "ERROR: Sudo required. Run with a user that has sudo access."
-  exit 1
-fi
-echo "  ✓ Sudo OK"
 
 if $DRY_RUN; then
   echo ""
@@ -60,9 +60,17 @@ if ! command -v chezmoi &>/dev/null; then
   sudo pacman -S --needed --noconfirm chezmoi
 fi
 
+# Clear any stale lock (e.g. from interrupted previous install)
+rm -f "$HOME/.local/share/chezmoi/.chezmoi.lock"
+
 # --- Apply dotfiles ----------------------------------------------------------
 echo ">>> Applying dotfiles from GitHub..."
-chezmoi init --apply https://github.com/iswad-lab/dotfiles
+# If chezmoi already initialized, use update instead of init --apply
+if [ -d "$HOME/.local/share/chezmoi/.git" ]; then
+  chezmoi update --apply 2>/dev/null || chezmoi init --apply https://github.com/iswad-lab/dotfiles
+else
+  chezmoi init --apply https://github.com/iswad-lab/dotfiles
+fi
 
 echo ""
 echo ">>> Done. Restart your session to apply all changes."
