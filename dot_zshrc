@@ -32,10 +32,7 @@ alias pp="limine-boot-vfio"
 # --- Boot to default Linux kernel ---
 alias ll="limine-boot-linux"
 
-# --- Backup ---
-alias backup-data="bash /home/iswad/DATA/05_Code/Scripts/Linux/backup-data.sh"
-
-# --- Power profile ---
+# --- Backup & Power ---
 alias power="sudo power-profile info"
 alias balanced="sudo power-profile balanced && sudo power-profile info"
 alias perf="sudo power-profile perf && sudo power-profile info"
