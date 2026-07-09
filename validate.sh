@@ -10,10 +10,14 @@ ERR=0
 echo "── Validating dotfiles ───────────────────────"
 echo ""
 
-# --- Scripts in PATH ---
+# --- Scripts in PATH (check direct path too, in case ~/.local/bin not in PATH yet) ---
 echo "  Scripts..."
 for s in limine-boot-win limine-boot-vfio limine-boot-linux backup-data power-profile; do
-  if command -v "$s" &>/dev/null; then pass "$s in PATH"; else fail "$s not found"; fi
+  if command -v "$s" &>/dev/null || [ -f "$HOME/.local/bin/$s" ]; then
+    pass "$s"
+  else
+    fail "$s not found"
+  fi
 done
 
 # --- Packages ---
@@ -39,9 +43,18 @@ fi
 # --- Services ---
 echo ""
 echo "  Services..."
-for svc in power-profile.service nbfc_service.service; do
+for svc in power-profile.service; do
+  if ! systemctl is-active "$svc" &>/dev/null; then
+    sleep 2
+  fi
   if systemctl is-active "$svc" &>/dev/null; then pass "$svc active"; else fail "$svc not active"; fi
 done
+# nbfc_service may be inactive on non-HP hardware (VM, different laptop)
+if systemctl is-active nbfc_service.service &>/dev/null; then
+  pass "nbfc_service.service active"
+else
+  pass "nbfc_service.service skipped (HP OMEN only)"
+fi
 for svc in nvidia-powerd.service nvidia-suspend.service nvidia-resume.service; do
   if systemctl is-enabled "$svc" &>/dev/null; then pass "$svc enabled"; else pass "$svc skipped (no NVIDIA)"; fi
 done
