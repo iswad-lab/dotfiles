@@ -12,7 +12,7 @@ echo ">>> Configuring Looking Glass..."
 # 1. Shared memory for Looking Glass (IVSHMEM)
 # ---------------------------------------------------------------------------
 sudo mkdir -p /etc/tmpfiles.d
-echo 'f /dev/shm/looking-glass 0660 iswad kvm - 64M' | \
+echo "f /dev/shm/looking-glass 0660 $USER kvm - 64M" | \
   sudo tee /etc/tmpfiles.d/looking-glass.conf > /dev/null
 
 # Apply immediately

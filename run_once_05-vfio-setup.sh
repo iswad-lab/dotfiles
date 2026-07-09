@@ -45,6 +45,6 @@ fi
 # 3. Regenerate initramfs
 # ---------------------------------------------------------------------------
 echo ">>> Regenerating initramfs..."
-sudo mkinitcpio -P
+yes | sudo mkinitcpio -P 2>/dev/null
 
 echo ">>> VFIO setup complete. Reboot required for changes to take effect."

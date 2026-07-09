@@ -27,6 +27,10 @@ echo ">>> Installing wine-staging ${WINE_VERSION}..."
 sudo pacman -U --noconfirm "$tmpdir/$WINE_PKG"
 rm -rf "$tmpdir"
 
+# Install wine-mono for .NET apps (auto-approve to avoid interactive popup)
+echo ">>> Installing wine-mono..."
+sudo pacman -S --noconfirm wine-mono 2>/dev/null || echo "    (wine-mono not in repos, will be prompted at first wineboot)"
+
 # Lock wine-staging in IgnorePkg
 if grep -q "^IgnorePkg" /etc/pacman.conf; then
   # IgnorePkg line exists — append wine-staging if not already there
