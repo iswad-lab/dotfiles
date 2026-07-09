@@ -84,6 +84,5 @@ blender
 obs-studio
 obsidian
 bitwarden                   # password manager
-bitwarden-cli               # CLI vault
 localsend                   # AirDrop-like file sharing
 # davinci-resolve             # optional, validate before deploying
