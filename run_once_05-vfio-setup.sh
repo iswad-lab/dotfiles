@@ -48,3 +48,19 @@ echo ">>> Regenerating initramfs..."
 yes | sudo mkinitcpio -P 2>/dev/null
 
 echo ">>> VFIO setup complete. Reboot required for changes to take effect."
+
+# ---------------------------------------------------------------------------
+# 4. Add VFIO kernel entry in Limine (if not already present)
+# ---------------------------------------------------------------------------
+LIMINE_CONF="/boot/limine.conf"
+if sudo grep -qm1 'linux-cachyos-vfio' "$LIMINE_CONF" 2>/dev/null; then
+  echo "    VFIO Limine entry already exists"
+else
+  echo "    Adding VFIO kernel entry to Limine..."
+  # Get the machine ID from an existing entry
+  MID=$(sudo grep -oP 'comment: machine-id=\K[0-9a-f]+' "$LIMINE_CONF" | head -1)
+  # Get root UUID from an existing cmdline
+  ROOT_UUID=$(sudo grep -oP 'root=UUID=\K[0-9a-f-]+' "$LIMINE_CONF" | head -1)
+
+  # Add VFIO entry using python helper (more reliable than sed)
+  sudo /usr/bin/python3 "$SCRIPT_DIR/dot_local/bin/.add-vfio-entry" "$LIMINE_CONF"
