@@ -44,12 +44,12 @@ fi
 
 echo ">>> wine-staging ${WINE_VERSION} installed and locked in IgnorePkg."
 
-# Initialize Wine prefix
+# Initialize Wine prefix (unattended, skip interactive popups)
 echo ">>> Initializing Wine prefix..."
-wine wineboot
+WINEDLLOVERRIDES="winemenubuilder.exe=d" wine wineboot -u 2>/dev/null
 
 # Install core fonts for plugin GUI compatibility
 echo ">>> Installing corefonts via winetricks..."
-winetricks -q corefonts
+WINEDLLOVERRIDES="winemenubuilder.exe=d" winetricks -q corefonts 2>/dev/null
 
 echo ">>> Wine setup complete."
