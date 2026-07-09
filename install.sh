@@ -74,4 +74,8 @@ fi
 
 echo ""
 echo ">>> Done. Restart your session to apply all changes."
-echo "    Run validate.sh to verify deployment."
+echo ""
+
+# Run validation (download from repo, run locally)
+echo ">>> Running post-install validation..."
+curl -fsLS "https://raw.githubusercontent.com/iswad-lab/dotfiles/main/validate.sh" | bash
