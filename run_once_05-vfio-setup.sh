@@ -57,12 +57,8 @@ if sudo grep -qm1 'linux-cachyos-vfio' "$LIMINE_CONF" 2>/dev/null; then
   echo "    VFIO Limine entry already exists"
 else
   echo "    Adding VFIO kernel entry to Limine..."
-  # Get the machine ID from an existing entry
-  MID=$(sudo grep -oP 'comment: machine-id=\K[0-9a-f]+' "$LIMINE_CONF" | head -1)
-  # Get root UUID from an existing cmdline
-  ROOT_UUID=$(sudo grep -oP 'root=UUID=\K[0-9a-f-]+' "$LIMINE_CONF" | head -1)
 
-  # Add VFIO entry using python helper (more reliable than sed)
+  # Add VFIO entry using python helper (extracts machine-id and root UUID)
   sudo /usr/bin/python3 "$SCRIPT_DIR/dot_local/bin/.add-vfio-entry" "$LIMINE_CONF"
   echo "    VFIO Limine entry added"
   fi
