@@ -69,7 +69,7 @@ dotfiles/
 | `ww` | One-time boot to Windows |
 | `pp` | One-time boot to VFIO GPU passthrough kernel |
 | `ll` | One-time boot to default Linux kernel |
-| `backup-data` | Backup DATA to external drive |
+| `backup` | Backup DATA to external drive |
 | `power` | Show power profile status (CPU/GPU temps, limits, fans) |
 | `balanced` | Reset to balanced profile (auto AC/battery) |
 | `perf` | Switch to performance mode (4.4 GHz / GPU unlocked) |
