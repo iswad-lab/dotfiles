@@ -31,6 +31,11 @@ if [ "$(id -u)" = "0" ]; then
 fi
 echo "  ✓ Not root"
 
+# Cache sudo password (one prompt for the whole install)
+echo ">>> Sudo access required (enter password once)..."
+sudo -v
+echo "  ✓ Sudo OK"
+
 # Check internet
 if ! ping -c1 archlinux.org &>/dev/null 2>&1; then
   echo "ERROR: No internet connection."
