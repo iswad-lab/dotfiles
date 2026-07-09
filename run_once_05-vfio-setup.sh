@@ -6,6 +6,8 @@
 # =============================================================================
 set -e
 
+SCRIPT_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
+
 echo ">>> Configuring VFIO for GPU passthrough..."
 
 # ---------------------------------------------------------------------------
