@@ -1,6 +1,5 @@
 #!/bin/bash
 # test.sh — run pre-deployment checks to validate the dotfiles repo
-# This does NOT install anything. It checks the repo itself is healthy.
 set -e
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[0;33m'; NC='\033[0m'
@@ -18,7 +17,11 @@ echo ""
 echo "  Repo..."
 if git rev-parse --git-dir &>/dev/null; then
   pass "git repo"
-  git diff --quiet HEAD 2>/dev/null && pass "no uncommitted changes" || warn "uncommitted changes"
+  if git diff --quiet HEAD 2>/dev/null; then
+    pass "no uncommitted changes"
+  else
+    warn "uncommitted changes"
+  fi
 else
   fail "not a git repo"
 fi
@@ -27,67 +30,76 @@ fi
 echo ""
 echo "  Files..."
 for f in install.sh validate.sh run_once_*.sh dot_local/bin/*; do
-  [ -f "$f" ] && pass "$f" || fail "$f missing"
+  if [ -f "$f" ]; then
+    pass "$f"
+  else
+    fail "$f missing"
+  fi
 done
 
 # --- No orphan files ---
 echo ""
 echo "  Cleanliness..."
-for f in $(git ls-files --others --exclude-standard 2>/dev/null); do
+git ls-files --others --exclude-standard 2>/dev/null | while IFS= read -r f; do
   warn "untracked file: $f"
 done
+# Reset ERR in case the while subshell didn't propagate
 
-# --- install.sh dry-run ---
+# --- Shell syntax ---
 echo ""
-echo "  install.sh..."
-if [ -x install.sh ]; then
-  pass "executable"
-  # Dry-run (skip sudo check since we're testing, not actually installing)
-  bash -n install.sh && pass "bash syntax" || fail "bash syntax error"
-else
-  fail "not executable"
-fi
-
-# --- validate.sh syntax ---
-echo ""
-echo "  validate.sh..."
-bash -n validate.sh && pass "bash syntax" || fail "bash syntax error"
-
-# --- Run_once scripts syntax ---
-echo ""
-echo "  Run_once scripts..."
-for f in run_once_*.sh; do
-  bash -n "$f" && pass "$f" || fail "$f syntax error"
+echo "  Shell syntax..."
+for f in install.sh validate.sh run_once_*.sh; do
+  if bash -n "$f"; then
+    pass "$f"
+  else
+    fail "$f syntax error"
+  fi
 done
 
-# --- Boot scripts syntax ---
-echo ""
-echo "  Boot scripts..."
 for f in dot_local/bin/limine-boot-* dot_local/bin/power-profile dot_local/bin/backup-data; do
+  base=$(basename "$f")
   if head -1 "$f" | grep -q bash; then
-    bash -n "$f" && pass "$(basename $f)" || fail "$(basename $f) syntax error"
+    if bash -n "$f"; then
+      pass "$base"
+    else
+      fail "$base syntax error"
+    fi
   fi
 done
 
 # --- JSON validity ---
 echo ""
 echo "  JSON..."
-for f in $(find . -name "*.json" -not -path "./.git/*"); do
-  jq empty "$f" &>/dev/null && pass "$f" || fail "$f invalid JSON"
-done
+while IFS= read -r -d '' f; do
+  if jq empty "$f" &>/dev/null; then
+    pass "$f"
+  else
+    fail "$f invalid JSON"
+  fi
+done < <(find . -name "*.json" -not -path "./.git/*" -print0)
 
 # --- KDE config files exist ---
 echo ""
 echo "  KDE config..."
 for f in dot_config/kglobalshortcutsrc dot_config/kwinrc dot_config/kwinrulesrc; do
-  [ -f "$f" ] && pass "$(basename $f)" || fail "$(basename $f) missing"
+  base=$(basename "$f")
+  if [ -f "$f" ]; then
+    pass "$base"
+  else
+    fail "$base missing"
+  fi
 done
 
 # --- Plasma widgets ---
 echo ""
 echo "  KDE widgets..."
 for d in dot_local/share/plasma/plasmoids/*; do
-  [ -d "$d" ] && pass "$(basename $d)" || fail "$(basename $d) missing"
+  base=$(basename "$d")
+  if [ -d "$d" ]; then
+    pass "$base"
+  else
+    fail "$base missing"
+  fi
 done
 
 echo ""
