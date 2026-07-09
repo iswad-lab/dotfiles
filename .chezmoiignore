@@ -8,6 +8,7 @@ packages.aur
 README.md
 validate.sh
 install.sh
+test.sh
 
 # Local secrets (API keys, tokens) — never versioned
 dot_config/zsh/secrets
