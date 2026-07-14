@@ -27,7 +27,7 @@ NBFB_BUILT=false
 if [ -f "$NBFB_BIN" ] && strings "$NBFB_BIN" 2>/dev/null | grep -q "iswad-lab"; then
   log_skip "nbfc-linux already installed (iswad-lab fork)"
 else
-  log_section "Building nbfc-linux from iswad-lab/nbfc-linux..."
+  log_info "Building nbfc-linux from iswad-lab/nbfc-linux..."
   NBFB_BUILT=true
 
   WORKDIR=$(mktemp -d)
@@ -50,7 +50,7 @@ NBFB_QT_BIN="/usr/bin/nbfc-qt"
 if [ -f "$NBFB_QT_BIN" ]; then
   log_skip "nbfc-qt already installed"
 else
-  log_section "Building nbfc-qt from iswad-lab/nbfc-qt..."
+  log_info "Building nbfc-qt from iswad-lab/nbfc-qt..."
   NBFB_BUILT=true
 
   if [ -z "${WORKDIR:-}" ]; then

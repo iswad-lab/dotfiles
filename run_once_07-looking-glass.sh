@@ -19,7 +19,7 @@ source "${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/.lib_logging.sh" 2>/de
   log_summary() { :; }
 }
 
-log_section "Configuring Looking Glass..."
+log_info "Configuring Looking Glass..."
 
 # ---------------------------------------------------------------------------
 # 1. Shared memory for Looking Glass (IVSHMEM)

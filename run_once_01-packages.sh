@@ -43,7 +43,7 @@ parse_list() {
  fi
 
  # --- Official packages -------------------------------------------------------
- log_section "Installing pacman packages..."
+ log_info "Installing pacman packages..."
  mapfile -t pacman_pkgs < <(parse_list "$PACMAN_LIST")
  
  # Handle nodejs → nodejs-lts-jod migration (if a package in the list needs it)
@@ -61,7 +61,7 @@ parse_list() {
  sudo pacman -S --needed --noconfirm "${pacman_pkgs[@]}"
 
 # --- AUR packages ------------------------------------------------------------
-log_section "Installing AUR packages..."
+log_info "Installing AUR packages..."
 mapfile -t aur_pkgs < <(parse_list "$AUR_LIST")
 paru -S --needed --noconfirm "${aur_pkgs[@]}"
 
@@ -74,7 +74,7 @@ sudo usermod -aG wheel "$USER"
 
 # --- Logitech mouse (MX Master 3S) ------------------------------------------
 if command -v logid &>/dev/null; then
-  log_section "Configuring Logitech MX Master 3S..."
+  log_info "Configuring Logitech MX Master 3S..."
   sudo tee /etc/logid.cfg > /dev/null << 'EOF'
 devices: (
 {

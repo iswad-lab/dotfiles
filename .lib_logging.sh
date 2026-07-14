@@ -48,9 +48,9 @@ _log_sep() {
     prefix=""
   fi
   local left="━━━ ${title}${prefix} "
-  local term_width="${COLUMNS:-80}"
+  local max_width=70
   local min_dashes=4
-  local dash_count=$(( term_width - ${#left} - 1 ))
+  local dash_count=$(( max_width - ${#left} - 1 ))
   [ "$dash_count" -lt "$min_dashes" ] && dash_count="$min_dashes"
   printf "${BOLD}${left}${RESET}"
   printf '─%.0s' $(seq 1 "$dash_count")

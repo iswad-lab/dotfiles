@@ -21,7 +21,7 @@ source "${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/.lib_logging.sh" 2>/de
 
 SCRIPT_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
 
-log_section "Installing power-profile..."
+log_info "Installing power-profile..."
 
 # Disable power-profiles-daemon if present (conflicts with our setup)
 if [ -f /usr/lib/systemd/system/power-profiles-daemon.service ]; then

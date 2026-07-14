@@ -22,7 +22,7 @@ source "${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/.lib_logging.sh" 2>/de
 
 SCRIPT_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
 
-log_section "Configuring VFIO for GPU passthrough..."
+log_info "Configuring VFIO for GPU passthrough..."
 
 NEEDS_MKINITCPIO=false
 
