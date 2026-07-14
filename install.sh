@@ -2,14 +2,22 @@
 # =============================================================================
 # install.sh — bootstrap dotfiles from GitHub
 # Usage: sh -c "$(curl -fsLS https://raw.githubusercontent.com/iswad-lab/dotfiles/main/install.sh)"
-#        ./install.sh           # normal install
-#        ./install.sh --dry-run # check prerequisites only, no install
+#        ./install.sh               # fresh install (or update if already installed)
+#        ./install.sh --dry-run     # check prerequisites only, no install
+#        ./install.sh --validate    # force validation even on update
 # =============================================================================
 set -e
 
 DRY_RUN=false
-if [ "${1:-}" = "--dry-run" ]; then
-  DRY_RUN=true
+FORCE_VALIDATE=false
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    --validate) FORCE_VALIDATE=true ;;
+  esac
+done
+
+if $DRY_RUN; then
   echo ">>> DRY RUN — checking prerequisites only"
   echo ""
 fi
@@ -31,14 +39,6 @@ if [ "$(id -u)" = "0" ]; then
 fi
 echo "  ✓ Not root"
 
-# Cache sudo password (one prompt for the whole install)
-echo ">>> Sudo access required (enter password once)..."
-sudo -v
-# Keep sudo timestamp alive during potentially long operations (paru build)
-(sudo -v && while true; do sleep 60; sudo -v; done) &>/dev/null &
-KEEPER=$!
-echo "  ✓ Sudo OK"
-
 # Check internet
 if ! ping -c1 archlinux.org &>/dev/null 2>&1; then
   echo "ERROR: No internet connection."
@@ -46,34 +46,60 @@ if ! ping -c1 archlinux.org &>/dev/null 2>&1; then
 fi
 echo "  ✓ Internet OK"
 
+# Auto-detect: fresh install or update?
+PARU_MISSING=false
+CHEZMOI_MISSING=false
+! command -v paru &>/dev/null && PARU_MISSING=true
+! command -v chezmoi &>/dev/null && CHEZMOI_MISSING=true
+
+if $PARU_MISSING || $CHEZMOI_MISSING; then
+  INSTALL_TYPE="fresh"
+  echo "  → Fresh install detected"
+else
+  INSTALL_TYPE="update"
+  echo "  → Update mode (paru + chezmoi already installed)"
+fi
+
 if $DRY_RUN; then
   echo ""
   echo ">>> All prerequisites OK. Run without --dry-run to install."
   exit 0
 fi
 
-# --- paru --------------------------------------------------------------------
-if ! command -v paru &>/dev/null; then
+# --- Sudo keepalive (only needed for fresh install) ---------------------------
+if [ "$INSTALL_TYPE" = "fresh" ]; then
+  echo ">>> Sudo access required (enter password once)..."
+  sudo -v
+  (sudo -v && while true; do sleep 60; sudo -v; done) &>/dev/null &
+  KEEPER=$!
+  echo "  ✓ Sudo OK"
+fi
+
+# --- paru (skip if already installed) -----------------------------------------
+if $PARU_MISSING; then
   echo ">>> Installing paru..."
   sudo pacman -S --needed --noconfirm base-devel git
   tmpdir=$(mktemp -d)
   git clone https://aur.archlinux.org/paru.git "$tmpdir/paru"
   (cd "$tmpdir/paru" && makepkg -si --noconfirm)
   rm -rf "$tmpdir"
+else
+  echo ">>> paru already installed, skipping"
 fi
 
-# --- chezmoi -----------------------------------------------------------------
-if ! command -v chezmoi &>/dev/null; then
+# --- chezmoi (skip if already installed) --------------------------------------
+if $CHEZMOI_MISSING; then
   echo ">>> Installing chezmoi..."
   sudo pacman -S --needed --noconfirm chezmoi
+else
+  echo ">>> chezmoi already installed, skipping"
 fi
 
 # Clear any stale lock (e.g. from interrupted previous install)
 rm -f "$HOME/.local/share/chezmoi/.chezmoi.lock"
 
-# --- Apply dotfiles ----------------------------------------------------------
+# --- Apply dotfiles -----------------------------------------------------------
 echo ">>> Applying dotfiles from GitHub..."
-# If chezmoi already initialized, use update instead of init --apply
 if [ -d "$HOME/.local/share/chezmoi/.git" ]; then
   chezmoi update --apply 2>/dev/null || chezmoi init --apply https://github.com/iswad-lab/dotfiles
 else
@@ -83,10 +109,16 @@ fi
 echo ""
 echo ">>> Done. Restart your session to apply all changes."
 
-# Kill sudo timestamp keeper
-kill "$KEEPER" 2>/dev/null || true
+# Kill sudo timestamp keeper (only if started)
+if [ "$INSTALL_TYPE" = "fresh" ]; then
+  kill "$KEEPER" 2>/dev/null || true
+fi
 echo ""
 
-# Run validation (download from repo, run locally)
-echo ">>> Running post-install validation..."
-curl -fsLS "https://raw.githubusercontent.com/iswad-lab/dotfiles/main/validate.sh" | bash
+# --- Validation (skip on update unless --validate) ----------------------------
+if [ "$INSTALL_TYPE" = "fresh" ] || $FORCE_VALIDATE; then
+  echo ">>> Running post-install validation..."
+  curl -fsLS "https://raw.githubusercontent.com/iswad-lab/dotfiles/main/validate.sh" | bash
+else
+  echo ">>> Validation skipped (run with --validate to force)"
+fi

@@ -41,10 +41,10 @@ Nice=-5
 WantedBy=multi-user.target
 EOF
 
-# Write udev rule for AC plug/unplug
+# Write udev rule for AC plug/unplug (calls 'auto' which detects AC/battery)
 sudo tee /etc/udev/rules.d/99-power-profile.rules > /dev/null << 'EOF'
-SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="1", RUN+="/usr/bin/systemd-run --no-block --unit=power-profile-switch /usr/local/bin/power-profile ac"
-SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="0", RUN+="/usr/bin/systemd-run --no-block --unit=power-profile-switch /usr/local/bin/power-profile battery"
+ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="1", RUN+="/usr/bin/systemd-run --no-block /usr/local/bin/power-profile auto"
+ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="ACAD", ATTR{online}=="0", RUN+="/usr/bin/systemd-run --no-block /usr/local/bin/power-profile auto"
 EOF
 
 # Set swappiness (lower = avoid disk swap, good for NVMe)

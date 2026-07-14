@@ -41,20 +41,19 @@ apply_perf() {
 }
 
 apply_ac() {
-    log "AC profile: 3.2 GHz / ${TDP_AC}W / GPU ${GPU_AC} MHz"
+    log "AC profile: 3.2 GHz / $((TDP_AC / 1000))W / GPU ${GPU_AC} MHz"
     write_cpu_sysfs scaling_governor powersave
     write_cpu_sysfs scaling_max_freq "${FREQ_AC}"
     write_cpu_sysfs energy_performance_preference balance_power
     /usr/bin/ryzenadj --stapm-limit=${TDP_AC} --fast-limit=${FAST_AC} --slow-limit=${TDP_AC} \
-             --apu-slow-limit=30000 --tctl-temp=${TEMP_AC} 2>&1 || log "WARN: ryzenadj AC failed"
+             --apu-slow-limit=22000 --tctl-temp=${TEMP_AC} 2>&1 || log "WARN: ryzenadj AC failed"
     nvidia-smi -lgc 0,${GPU_AC} > /dev/null 2>&1 || true
-    nvidia-smi -lmc 405 > /dev/null 2>&1 || true
-    echo ">>> AC mode: CPU 3.2 GHz / $((TDP_AC / 1000))W / GPU ${GPU_AC} MHz"
-    log "OK: CPU 3.2 GHz / ${TDP_AC}W, GPU ${GPU_AC} MHz"
+    echo ">>> AC mode: CPU 3.2 GHz / $((TDP_AC / 1000))W / GPU 0–${GPU_AC} MHz (dynamic mem)"
+    log "OK: CPU 3.2 GHz / $((TDP_AC / 1000))W, GPU ${GPU_AC} MHz (mem: auto)"
 }
 
 apply_battery() {
-    log "Battery profile: ${FREQ_BAT} kHz / ${TDP_BAT}W / GPU ${GPU_BAT} MHz"
+    log "Battery profile: $((FREQ_BAT / 1000000)).$(( (FREQ_BAT / 100000) % 10 )) GHz / $((TDP_BAT / 1000))W / GPU ${GPU_BAT} MHz"
     write_cpu_sysfs scaling_governor powersave
     write_cpu_sysfs scaling_max_freq "${FREQ_BAT}"
     write_cpu_sysfs energy_performance_preference power
@@ -63,7 +62,7 @@ apply_battery() {
     nvidia-smi -lgc 0,${GPU_BAT} > /dev/null 2>&1 || true
     nvidia-smi -lmc 405 > /dev/null 2>&1 || true
     echo ">>> BATTERY mode: CPU $((FREQ_BAT / 1000000)).$(( (FREQ_BAT / 100000) % 10 )) GHz / $((TDP_BAT / 1000))W / GPU ${GPU_BAT} MHz"
-    log "OK: CPU ${FREQ_BAT} kHz / ${TDP_BAT}W, GPU ${GPU_BAT} MHz"
+    log "OK: CPU $((FREQ_BAT / 1000000)).$(( (FREQ_BAT / 100000) % 10 )) GHz / $((TDP_BAT / 1000))W, GPU ${GPU_BAT} MHz"
 }
 
 # ------ Main ------

@@ -1,7 +1,7 @@
 {
   "NotebookModel": "iswad-nbfc",
   "Author": "Isma",
-  "Comment": "PATH: /usr/share/nbfc/configs/",
+  "Comment": "PATH: /usr/share/nbfc/configs/. MinSpeed 12% at first step prevents the yoyo effect (fan oscillating 0↔12% around 48-50°C). DownThreshold=0 on step 0 ensures the fan never fully stops once spun up.",
   "EcPollInterval": 1000,
   "ReadWriteWords": false,
   "CriticalTemperature": 100,

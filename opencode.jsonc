@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "models": {
+    "gemini:flash": {
+      "provider": "google",
+      "model": "gemini-2.5-flash",
+      "apiKey": "TA_CLE_API_ICI"
+    },
+    "deepseek:chat": {
+      "provider": "deepseek",
+      "model": "deepseek-chat",
+      "apiKey": "TA_CLE_DEEPSEEK_ICI"
+    }
+  }
+}
