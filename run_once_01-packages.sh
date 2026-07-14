@@ -25,15 +25,28 @@ parse_list() {
 }
 
 # --- Replace jack2 with pipewire-jack ----------------------------------------
-if pacman -Q jack2 &>/dev/null; then
-  echo ">>> jack2 detected, replacing with pipewire-jack..."
-  sudo pacman -Rdd --noconfirm jack2
-fi
+ if pacman -Q jack2 &>/dev/null; then
+   echo ">>> jack2 detected, replacing with pipewire-jack..."
+   sudo pacman -Rdd --noconfirm jack2
+ fi
 
-# --- Official packages -------------------------------------------------------
-echo ">>> Installing pacman packages..."
-mapfile -t pacman_pkgs < <(parse_list "$PACMAN_LIST")
-sudo pacman -S --needed --noconfirm "${pacman_pkgs[@]}"
+ # --- Official packages -------------------------------------------------------
+ echo ">>> Installing pacman packages..."
+ mapfile -t pacman_pkgs < <(parse_list "$PACMAN_LIST")
+ 
+ # Handle nodejs → nodejs-lts-jod migration (if a package in the list needs it)
+ if pacman -Q nodejs &>/dev/null; then
+   for pkg in "${pacman_pkgs[@]}"; do
+     dep=$(pacman -Si "$pkg" 2>/dev/null | grep -oP 'nodejs-lts-jod[^ ]*' | head -1)
+     if [ -n "$dep" ]; then
+       echo ">>> $pkg depends on $dep, replacing nodejs..."
+       sudo pacman -Rdd --noconfirm nodejs 2>/dev/null || true
+       break
+     fi
+   done
+ fi
+ 
+ sudo pacman -S --needed --noconfirm "${pacman_pkgs[@]}"
 
 # --- AUR packages ------------------------------------------------------------
 echo ">>> Installing AUR packages..."
