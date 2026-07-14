@@ -33,7 +33,11 @@ KCM.SimpleKCM {
     property alias cfg_languageIndex: languageCombo.currentIndex
     property alias cfg_useArabicNumbers: useArabicNumbersCheck.checked
     property alias cfg_notifications: notificationsCheck.checked
-    property alias cfg_preNotificationMinutes: preNotificationSpinBox.value
+    property alias cfg_preNotificationMinutes: preNotificationTextField.text
+    property alias cfg_showMidnight: showMidnightCheck.checked
+    property alias cfg_showLastThird: showLastThirdCheck.checked
+    property alias cfg_showEmojis: showEmojisCheck.checked
+    property alias cfg_enablePrePrayerGlow: enablePrePrayerGlowCheck.checked
     property alias cfg_playPreAdhanSound: preAdhanSoundCheck.checked
     property alias cfg_postNotificationMinutes: postNotificationSpinBox.value
     property alias cfg_playPostAdhanSound: postAdhanSoundCheck.checked
@@ -107,6 +111,9 @@ KCM.SimpleKCM {
     property var cfg_quranReciterIndexDefault
     property var cfg_schoolDefault
     property var cfg_showBackgroundDefault
+    property var cfg_showMidnightDefault
+    property var cfg_showLastThirdDefault
+    property var cfg_showEmojisDefault
     property var cfg_showCompactMediaButtonDefault
     property var cfg_sunriseOffsetMinutesDefault
     property var cfg_useCoordinatesDefault
@@ -300,19 +307,19 @@ KCM.SimpleKCM {
             Layout.alignment: Qt.AlignLeft
             onClicked: {
                 let xhr = new XMLHttpRequest();
-                xhr.open("GET", "http://ip-api.com/json/", true);
+                xhr.open("GET", "https://freeipapi.com/api/json", true);
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState === 4 && xhr.status === 200) {
                         try {
                             let data = JSON.parse(xhr.responseText);
-                            cityField.text = data.city || "";
-                            countryField.text = data.country || "";
-                            if (data.country) {
-                                root.autoSelectMethod(data.country);
+                            cityField.text = data.cityName || "";
+                            countryField.text = data.countryName || "";
+                            if (data.countryName) {
+                                root.autoSelectMethod(data.countryName);
                             }
-                            if (data.lat && data.lon) {
-                                latField.text = data.lat.toString();
-                                longField.text = data.lon.toString();
+                            if (data.latitude && data.longitude) {
+                                latField.text = data.latitude.toString();
+                                longField.text = data.longitude.toString();
                                 useCoordsCheck.checked = true;
                             }
                         } catch (e) {
@@ -364,6 +371,12 @@ KCM.SimpleKCM {
                 { ar: "الحنفي", en: "Hanafi" }
             ]
         }
+        Label {
+            text: languageCombo.currentIndex === 1 ? "يؤثر على موعد صلاة العصر" : "This setting mainly affects Asr's time"
+            font.italic: true
+            Layout.fillWidth: true
+            opacity: 0.7
+        }
 
         // --- SECTION 2: APPEARANCE & NOTIFICATIONS ---
         Kirigami.Separator { Kirigami.FormData.label: languageCombo.currentIndex === 1 ? "الإعدادات العامة" : "General Settings"; Kirigami.FormData.isSection: true }
@@ -392,7 +405,17 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: ""
             visible: languageCombo.currentIndex === 1
         }
-        CheckBox { id: hourFormatCheck; text: languageCombo.currentIndex === 1 ? "نظام ١٢ ساعة (ص/م)" : "Use 12-hour format (AM/PM)"; Kirigami.FormData.label: languageCombo.currentIndex === 1 ? "صيغة الوقت:" : "Time Format:" }
+        CheckBox { id: hourFormatCheck; text: languageCombo.currentIndex === 1 ? "نظام 12 ساعة (ص/م)" : "Use 12-hour format (AM/PM)"; Kirigami.FormData.label: languageCombo.currentIndex === 1 ? "تنسيق الوقت:" : "Time Format:" }
+        CheckBox {
+            id: showEmojisCheck
+            text: languageCombo.currentIndex === 1 ? "إظهار الرموز التعبيرية للصلوات (إيموجي) في القائمة المنسدلة" : "Show emojis in prayer list"
+            Kirigami.FormData.label: ""
+        }
+        CheckBox {
+            id: enablePrePrayerGlowCheck
+            text: languageCombo.currentIndex === 1 ? "تفعيل الوميض الأصفر قبل الصلاة بـ 5 دقائق" : "Enable 5-minute pre-prayer yellow glow"
+            Kirigami.FormData.label: ""
+        }
 
         Kirigami.Separator { Kirigami.FormData.label: languageCombo.currentIndex === 1 ? "التنبيهات" : "Notifications"; Kirigami.FormData.isSection: true }
 
@@ -406,13 +429,21 @@ KCM.SimpleKCM {
             Kirigami.FormData.label: languageCombo.currentIndex === 1 ? "قبل الأذان:" : "Pre-Adhan:"
             spacing: 0
             RowLayout {
-                SpinBox { id: preNotificationSpinBox; from: 0; to: 60 }
-                Label { text: languageCombo.currentIndex === 1 ? "دقيقة قبل الصلاة" : "minutes before" }
+                TextField {
+                    id: preNotificationTextField
+                    placeholderText: "5, 10, 20"
+                }
+                Label { text: languageCombo.currentIndex === 1 ? "دقائق قبل الصلاة" : "minutes before" }
+            }
+            Label { 
+                text: languageCombo.currentIndex === 1 ? "لإضافة عدة تنبيهات اكتب: 5, 10, 15" : "to add multiple times type: 5, 10, 15"
+                font.pixelSize: Kirigami.Theme.smallFont.pixelSize
+                opacity: 0.7
             }
             CheckBox {
                 id: preAdhanSoundCheck
                 text: languageCombo.currentIndex === 1 ? "تشغيل صوت التنبيه" : "Play notification sound"
-                enabled: preNotificationSpinBox.value > 0
+                enabled: preNotificationTextField.text.trim().length > 0
             }
         }
 
@@ -446,6 +477,19 @@ KCM.SimpleKCM {
                 id: showCompactMediaCheck
                 text: languageCombo.currentIndex === 1 ? "إظهار زر التشغيل/الإيقاف في العرض المصغر" : "Show Play/Pause button in compact view"
                 enabled: enableQuranCheck.checked
+            }
+        }
+
+        ColumnLayout {
+            Kirigami.FormData.label: languageCombo.currentIndex === 1 ? "أوقات الصلاة الإضافية:" : "Extra Prayer Times:"
+            spacing: 0
+            CheckBox {
+                id: showMidnightCheck
+                text: languageCombo.currentIndex === 1 ? "إظهار منتصف الليل" : "Show Midnight"
+            }
+            CheckBox {
+                id: showLastThirdCheck
+                text: languageCombo.currentIndex === 1 ? "إظهار الثلث الأخير من الليل" : "Show Last Third of Night"
             }
         }
 
