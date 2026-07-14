@@ -17,7 +17,7 @@ if [ -f /usr/lib/systemd/system/power-profiles-daemon.service ]; then
 fi
 
 # Copy the profile script
-sudo cp "$SCRIPT_DIR/dot_local/bin/power-profile" /usr/local/bin/power-profile
+sudo cp "$SCRIPT_DIR/dot_local/bin/executable_power-profile" /usr/local/bin/power-profile
 sudo chmod +x /usr/local/bin/power-profile
 
 # Remove old service/udev if they exist (from ryzenadj-profile rename)
