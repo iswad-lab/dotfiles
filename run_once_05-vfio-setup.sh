@@ -75,3 +75,15 @@ else
     echo "    WARNING: .add-vfio-entry helper not found, skipping Limine entry"
   fi
 fi
+
+# ---------------------------------------------------------------------------
+# 5. Set Limine timeout to 1 (fast boot)
+# ---------------------------------------------------------------------------
+if sudo grep -qP '^timeout:\s*0$' "$LIMINE_CONF" 2>/dev/null; then
+  echo "    Limine timeout already 0 (invisible), leaving as is"
+elif sudo grep -qP '^timeout:\s*1$' "$LIMINE_CONF" 2>/dev/null; then
+  echo "    Limine timeout already 1"
+else
+  echo "    Setting Limine timeout to 1..."
+  sudo sed -i 's/^timeout:.*/timeout: 1/' "$LIMINE_CONF"
+fi
