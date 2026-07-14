@@ -7,14 +7,27 @@
 # =============================================================================
 set -e
 
+source "${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/.lib_logging.sh" 2>/dev/null || {
+  log_section() { echo ""; echo "─── $1 ───"; }
+  log_pass() { echo "  ✔ $1"; }
+  log_fail() { echo "  ✘ $1"; }
+  log_fatal() { echo "  ✘ $1"; exit 1; }
+  log_warn() { echo "  ⚠ $1"; }
+  log_info() { echo "  → $1"; }
+  log_skip() { echo "  ⋯ $1"; }
+  log_detail() { echo "    • $1"; }
+  log_cmd() { echo "  $ $1"; }
+  log_summary() { :; }
+}
+
 # --- Check if nbfc-linux is already installed from iswad-lab fork ---------------
 NBFB_BIN="/usr/bin/nbfc-linux"
 NBFB_BUILT=false
 
 if [ -f "$NBFB_BIN" ] && strings "$NBFB_BIN" 2>/dev/null | grep -q "iswad-lab"; then
-  echo ">>> nbfc-linux already installed (iswad-lab fork), skipping build"
+  log_skip "nbfc-linux already installed (iswad-lab fork)"
 else
-  echo ">>> Building nbfc-linux from iswad-lab/nbfc-linux..."
+  log_section "Building nbfc-linux from iswad-lab/nbfc-linux..."
   NBFB_BUILT=true
 
   WORKDIR=$(mktemp -d)
@@ -25,9 +38,9 @@ else
 
   git clone --depth=1 https://github.com/iswad-lab/nbfc-linux "$WORKDIR/nbfc-linux"
   cd "$WORKDIR/nbfc-linux"
-  ./autogen.sh > /dev/null || { echo "ERROR: autogen.sh failed"; exit 1; }
-  ./configure --prefix=/usr --sysconfdir=/etc --bindir=/usr/bin > /dev/null || { echo "ERROR: configure failed"; exit 1; }
-  make 2>&1 | tail -5 || { echo "ERROR: make failed"; exit 1; }
+  ./autogen.sh > /dev/null || log_fatal "autogen.sh failed"
+  ./configure --prefix=/usr --sysconfdir=/etc --bindir=/usr/bin > /dev/null || log_fatal "configure failed"
+  make 2>&1 | tail -5 || log_fatal "make failed"
   sudo make install > /dev/null 2>&1
   cd /
 fi
@@ -35,9 +48,9 @@ fi
 # --- Check if nbfc-qt is already installed -------------------------------------
 NBFB_QT_BIN="/usr/bin/nbfc-qt"
 if [ -f "$NBFB_QT_BIN" ]; then
-  echo ">>> nbfc-qt already installed, skipping build"
+  log_skip "nbfc-qt already installed"
 else
-  echo ">>> Building nbfc-qt from iswad-lab/nbfc-qt..."
+  log_section "Building nbfc-qt from iswad-lab/nbfc-qt..."
   NBFB_BUILT=true
 
   if [ -z "${WORKDIR:-}" ]; then
@@ -56,12 +69,12 @@ fi
 if grep -q "^IgnorePkg" /etc/pacman.conf; then
   for pkg in nbfc-linux nbfc-qt; do
     if ! grep -q "$pkg" /etc/pacman.conf; then
-      echo ">>> Adding $pkg to IgnorePkg..."
+      log_info "Adding $pkg to IgnorePkg..."
       sudo sed -i "s/^IgnorePkg\s*=\s*/IgnorePkg = $pkg /" /etc/pacman.conf
     fi
   done
 else
-  echo ">>> Adding IgnorePkg = nbfc-linux nbfc-qt..."
+  log_info "Adding IgnorePkg = nbfc-linux nbfc-qt..."
   sudo sed -i 's/^#IgnorePkg.*/IgnorePkg = nbfc-linux nbfc-qt/' /etc/pacman.conf
 fi
 
@@ -69,8 +82,7 @@ fi
 FAN_PROFILE="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/iswad-nbfc.json"
 
 if [ ! -f "$FAN_PROFILE" ]; then
-  echo "ERROR: iswad-nbfc.json not found at $FAN_PROFILE"
-  exit 1
+  log_fatal "iswad-nbfc.json not found at $FAN_PROFILE"
 fi
 
 sudo mkdir -p /usr/share/nbfc/configs
@@ -78,13 +90,13 @@ sudo mkdir -p /usr/share/nbfc/configs
 # Only copy if content differs
 if [ -f /usr/share/nbfc/configs/iswad-nbfc.json ]; then
   if ! cmp -s "$FAN_PROFILE" /usr/share/nbfc/configs/iswad-nbfc.json; then
-    echo ">>> Updating fan profile..."
+    log_info "Updating fan profile..."
     sudo cp "$FAN_PROFILE" /usr/share/nbfc/configs/
   else
-    echo ">>> Fan profile already up to date"
+    log_pass "Fan profile already up to date"
   fi
 else
-  echo ">>> Deploying fan profile..."
+  log_info "Deploying fan profile..."
   sudo cp "$FAN_PROFILE" /usr/share/nbfc/configs/
 fi
 
@@ -94,21 +106,21 @@ NBFB_CONFIG="/etc/nbfc/nbfc.json"
 CURRENT_CONFIG='{"SelectedConfigId": "iswad-nbfc"}'
 if [ -f "$NBFB_CONFIG" ]; then
   if [ "$(cat "$NBFB_CONFIG")" != "$CURRENT_CONFIG" ]; then
-    echo ">>> Updating NBFC service config..."
+    log_info "Updating NBFC service config..."
     echo "$CURRENT_CONFIG" | sudo tee "$NBFB_CONFIG" > /dev/null
   fi
 else
-  echo ">>> Writing NBFC service config..."
+  log_info "Writing NBFC service config..."
   echo "$CURRENT_CONFIG" | sudo tee "$NBFB_CONFIG" > /dev/null
 fi
 
 # --- Enable and restart service (only if something changed) ---------------------
 if $NBFB_BUILT; then
-  echo ">>> Reloading systemd and restarting NBFC service..."
+  log_info "Reloading systemd and restarting NBFC service..."
   sudo systemctl daemon-reload
   sudo systemctl enable nbfc_service.service
   sudo nbfc restart
-  echo ">>> NBFC setup complete."
+  log_pass "NBFC setup complete."
 else
-  echo ">>> NBFC already up to date, nothing to do."
+  log_skip "NBFC already up to date, nothing to do."
 fi

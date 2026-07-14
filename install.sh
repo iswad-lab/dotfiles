@@ -8,6 +8,27 @@
 # =============================================================================
 set -e
 
+# ─── Load logging library from GitHub ───────────────────────────────────────
+LIB_URL="https://raw.githubusercontent.com/iswad-lab/dotfiles/main/.lib_logging.sh"
+LIB=$(curl -fsLS "$LIB_URL" 2>/dev/null) || true
+if [ -n "$LIB" ]; then
+  eval "$LIB"
+else
+  # Fallback: minimal logging
+  log_init() { :; }
+  log_section() { echo ""; echo "─── $1 ───"; }
+  log_pass() { echo "  ✔ $1"; }
+  log_fail() { echo "  ✘ $1"; }
+  log_fatal() { echo "  ✘ $1"; exit 1; }
+  log_warn() { echo "  ⚠ $1"; }
+  log_info() { echo "  → $1"; }
+  log_skip() { echo "  ⋯ $1"; }
+  log_detail() { echo "    • $1"; }
+  log_cmd() { echo "  $ $1"; }
+  log_summary() { :; }
+fi
+
+# ─── Parse arguments ───────────────────────────────────────────────────────
 DRY_RUN=false
 FORCE_VALIDATE=false
 for arg in "$@"; do
@@ -17,34 +38,29 @@ for arg in "$@"; do
   esac
 done
 
+log_init 8
+
+# ─── Prerequisites ─────────────────────────────────────────────────────────
+log_section "Prerequisites"
+
 if $DRY_RUN; then
-  echo ">>> DRY RUN — checking prerequisites only"
-  echo ""
+  log_info "DRY RUN — checking prerequisites only"
 fi
 
-# --- Prerequisites check ----------------------------------------------------
-echo ">>> Checking prerequisites..."
-
-# Check if running on Arch-based
 if [ ! -f /etc/arch-release ] && [ ! -f /etc/cachyos-release ]; then
-  echo "ERROR: This install script is for Arch Linux / CachyOS only."
-  exit 1
+  log_fatal "This install script is for Arch Linux / CachyOS only"
 fi
-echo "  ✓ Arch / CachyOS detected"
+log_pass "Arch / CachyOS detected"
 
-# Check not running as root (makepkg refuses)
 if [ "$(id -u)" = "0" ]; then
-  echo "ERROR: Do not run as root. Run as a normal user with sudo access."
-  exit 1
+  log_fatal "Do not run as root. Run as a normal user with sudo access."
 fi
-echo "  ✓ Not root"
+log_pass "Not root"
 
-# Check internet
 if ! ping -c1 archlinux.org &>/dev/null 2>&1; then
-  echo "ERROR: No internet connection."
-  exit 1
+  log_fatal "No internet connection"
 fi
-echo "  ✓ Internet OK"
+log_pass "Internet OK"
 
 # Auto-detect: fresh install or update?
 PARU_MISSING=false
@@ -54,71 +70,85 @@ CHEZMOI_MISSING=false
 
 if $PARU_MISSING || $CHEZMOI_MISSING; then
   INSTALL_TYPE="fresh"
-  echo "  → Fresh install detected"
+  log_info "Fresh install detected"
 else
   INSTALL_TYPE="update"
-  echo "  → Update mode (paru + chezmoi already installed)"
+  log_info "Update mode (paru + chezmoi already installed)"
 fi
 
 if $DRY_RUN; then
-  echo ""
-  echo ">>> All prerequisites OK. Run without --dry-run to install."
+  log_pass "All prerequisites OK. Run without --dry-run to install."
   exit 0
 fi
 
-# --- Sudo keepalive (only needed for fresh install) ---------------------------
+# ─── Sudo keepalive ─────────────────────────────────────────────────────────
+log_section "Sudo"
+
 if [ "$INSTALL_TYPE" = "fresh" ]; then
-  echo ">>> Sudo access required (enter password once)..."
+  log_info "Sudo access required (enter password once)..."
   sudo -v
   (sudo -v && while true; do sleep 60; sudo -v; done) &>/dev/null &
   KEEPER=$!
-  echo "  ✓ Sudo OK"
+  log_pass "Sudo OK"
+else
+  log_skip "Not needed (update mode)"
 fi
 
-# --- paru (skip if already installed) -----------------------------------------
+# ─── paru ───────────────────────────────────────────────────────────────────
+log_section "Package manager"
+
 if $PARU_MISSING; then
-  echo ">>> Installing paru..."
+  log_info "Installing paru..."
   sudo pacman -S --needed --noconfirm base-devel git
   tmpdir=$(mktemp -d)
   git clone https://aur.archlinux.org/paru.git "$tmpdir/paru"
   (cd "$tmpdir/paru" && makepkg -si --noconfirm)
   rm -rf "$tmpdir"
+  log_pass "paru installed"
 else
-  echo ">>> paru already installed, skipping"
+  log_skip "paru already installed"
 fi
 
-# --- chezmoi (skip if already installed) --------------------------------------
+# ─── chezmoi ────────────────────────────────────────────────────────────────
+log_section "chezmoi"
+
 if $CHEZMOI_MISSING; then
-  echo ">>> Installing chezmoi..."
+  log_info "Installing chezmoi..."
   sudo pacman -S --needed --noconfirm chezmoi
+  log_pass "chezmoi installed"
 else
-  echo ">>> chezmoi already installed, skipping"
+  log_skip "chezmoi already installed"
 fi
 
-# Clear any stale lock (e.g. from interrupted previous install)
+# Clear any stale lock
 rm -f "$HOME/.local/share/chezmoi/.chezmoi.lock"
 
-# --- Apply dotfiles -----------------------------------------------------------
-echo ">>> Applying dotfiles from GitHub..."
+# ─── Apply dotfiles ─────────────────────────────────────────────────────────
+log_section "Apply dotfiles"
+
+log_info "Applying dotfiles from GitHub..."
 if [ -d "$HOME/.local/share/chezmoi/.git" ]; then
   chezmoi update --apply 2>/dev/null || chezmoi init --apply https://github.com/iswad-lab/dotfiles
 else
   chezmoi init --apply https://github.com/iswad-lab/dotfiles
 fi
+log_pass "Dotfiles applied"
 
-echo ""
-echo ">>> Done. Restart your session to apply all changes."
-
-# Kill sudo timestamp keeper (only if started)
+# Kill sudo timestamp keeper
 if [ "$INSTALL_TYPE" = "fresh" ]; then
   kill "$KEEPER" 2>/dev/null || true
 fi
-echo ""
 
-# --- Validation (skip on update unless --validate) ----------------------------
+# ─── Validation ─────────────────────────────────────────────────────────────
+log_section "Validation"
+
 if [ "$INSTALL_TYPE" = "fresh" ] || $FORCE_VALIDATE; then
-  echo ">>> Running post-install validation..."
-  curl -fsLS "https://raw.githubusercontent.com/iswad-lab/dotfiles/main/validate.sh" | bash
+  log_info "Running post-install validation..."
+  bash <(curl -fsLS "https://raw.githubusercontent.com/iswad-lab/dotfiles/main/validate.sh")
 else
-  echo ">>> Validation skipped (run with --validate to force)"
+  log_skip "Validation skipped (run with --validate to force)"
+  log_info "Restart your session to apply all changes"
 fi
+
+# ─── Summary ────────────────────────────────────────────────────────────────
+log_summary

@@ -6,7 +6,20 @@
 # =============================================================================
 set -e
 
-echo ">>> Enabling libvirt services..."
+source "${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/.lib_logging.sh" 2>/dev/null || {
+  log_section() { echo ""; echo "─── $1 ───"; }
+  log_pass() { echo "  ✔ $1"; }
+  log_fail() { echo "  ✘ $1"; }
+  log_fatal() { echo "  ✘ $1"; exit 1; }
+  log_warn() { echo "  ⚠ $1"; }
+  log_info() { echo "  → $1"; }
+  log_skip() { echo "  ⋯ $1"; }
+  log_detail() { echo "    • $1"; }
+  log_cmd() { echo "  $ $1"; }
+  log_summary() { :; }
+}
+
+log_section "Enabling libvirt services..."
 
 # Enable socket activation (services start on demand)
 for drv in qemu interface network nodedev nwfilter secret storage; do
@@ -14,11 +27,11 @@ for drv in qemu interface network nodedev nwfilter secret storage; do
   sudo systemctl start  "virt${drv}d.socket"
 done
 
-echo ">>> Adding user to libvirt and kvm groups..."
+log_info "Adding user to libvirt and kvm groups..."
 sudo usermod -aG libvirt,kvm "$USER"
 
-echo ">>> Setting default network to autostart..."
+log_info "Setting default network to autostart..."
 sudo virsh net-autostart default 2>/dev/null || true
 sudo virsh net-start default 2>/dev/null || true
 
-echo ">>> libvirt setup complete."
+log_pass "libvirt setup complete."

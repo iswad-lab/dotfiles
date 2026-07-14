@@ -5,10 +5,22 @@
 # =============================================================================
 set -e
 
+source "${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/.lib_logging.sh" 2>/dev/null || {
+  log_section() { echo ""; echo "─── $1 ───"; }
+  log_pass() { echo "  ✔ $1"; }
+  log_fail() { echo "  ✘ $1"; }
+  log_fatal() { echo "  ✘ $1"; exit 1; }
+  log_warn() { echo "  ⚠ $1"; }
+  log_info() { echo "  → $1"; }
+  log_skip() { echo "  ⋯ $1"; }
+  log_detail() { echo "    • $1"; }
+  log_cmd() { echo "  $ $1"; }
+  log_summary() { :; }
+}
+
 # Ensure paru is available
 if ! command -v paru &>/dev/null; then
-  echo "ERROR: paru is not installed. Run install.sh first."
-  exit 1
+  log_fatal "paru is not installed. Run install.sh first."
 fi
 
 SCRIPT_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
@@ -26,12 +38,12 @@ parse_list() {
 
 # --- Replace jack2 with pipewire-jack ----------------------------------------
  if pacman -Q jack2 &>/dev/null; then
-   echo ">>> jack2 detected, replacing with pipewire-jack..."
+   log_info "jack2 detected, replacing with pipewire-jack..."
    sudo pacman -Rdd --noconfirm jack2
  fi
 
  # --- Official packages -------------------------------------------------------
- echo ">>> Installing pacman packages..."
+ log_section "Installing pacman packages..."
  mapfile -t pacman_pkgs < <(parse_list "$PACMAN_LIST")
  
  # Handle nodejs → nodejs-lts-jod migration (if a package in the list needs it)
@@ -39,7 +51,7 @@ parse_list() {
    for pkg in "${pacman_pkgs[@]}"; do
      dep=$(pacman -Si "$pkg" 2>/dev/null | grep -oP 'nodejs-lts-jod[^ ]*' | head -1)
      if [ -n "$dep" ]; then
-       echo ">>> $pkg depends on $dep, replacing nodejs..."
+       log_info "$pkg depends on $dep, replacing nodejs..."
        sudo pacman -Rdd --noconfirm nodejs 2>/dev/null || true
        break
      fi
@@ -49,20 +61,20 @@ parse_list() {
  sudo pacman -S --needed --noconfirm "${pacman_pkgs[@]}"
 
 # --- AUR packages ------------------------------------------------------------
-echo ">>> Installing AUR packages..."
+log_section "Installing AUR packages..."
 mapfile -t aur_pkgs < <(parse_list "$AUR_LIST")
 paru -S --needed --noconfirm "${aur_pkgs[@]}"
 
-echo ">>> Adding user to realtime group for audio..."
+log_info "Adding user to realtime group for audio..."
 sudo usermod -aG realtime "$USER"
 
 # Ensure user is in wheel group for passwordless sudo
-echo ">>> Ensuring user is in wheel group..."
+log_info "Ensuring user is in wheel group..."
 sudo usermod -aG wheel "$USER"
 
 # --- Logitech mouse (MX Master 3S) ------------------------------------------
 if command -v logid &>/dev/null; then
-  echo ">>> Configuring Logitech MX Master 3S..."
+  log_section "Configuring Logitech MX Master 3S..."
   sudo tee /etc/logid.cfg > /dev/null << 'EOF'
 devices: (
 {
@@ -95,4 +107,4 @@ EOF
   sudo systemctl enable --now logid.service 2>/dev/null || true
 fi
 
-echo ">>> Packages installed successfully."
+log_pass "Packages installed successfully."

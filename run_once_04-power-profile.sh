@@ -6,13 +6,26 @@
 # =============================================================================
 set -e
 
+source "${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/.lib_logging.sh" 2>/dev/null || {
+  log_section() { echo ""; echo "─── $1 ───"; }
+  log_pass() { echo "  ✔ $1"; }
+  log_fail() { echo "  ✘ $1"; }
+  log_fatal() { echo "  ✘ $1"; exit 1; }
+  log_warn() { echo "  ⚠ $1"; }
+  log_info() { echo "  → $1"; }
+  log_skip() { echo "  ⋯ $1"; }
+  log_detail() { echo "    • $1"; }
+  log_cmd() { echo "  $ $1"; }
+  log_summary() { :; }
+}
+
 SCRIPT_DIR="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}"
 
-echo ">>> Installing power-profile..."
+log_section "Installing power-profile..."
 
 # Disable power-profiles-daemon if present (conflicts with our setup)
 if [ -f /usr/lib/systemd/system/power-profiles-daemon.service ]; then
-  echo ">>> power-profiles-daemon detected, masking it..."
+  log_info "power-profiles-daemon detected, masking it..."
   sudo systemctl mask --now power-profiles-daemon.service 2>/dev/null || true
 fi
 
@@ -66,4 +79,4 @@ sudo systemctl enable nvidia-suspend.service nvidia-resume.service 2>/dev/null |
 # Reload udev rules
 sudo udevadm control --reload-rules
 
-echo ">>> Power profile setup complete."
+log_pass "Power profile setup complete."

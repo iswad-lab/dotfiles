@@ -1,4 +1,4 @@
-# .chezmoiignore — files in the source dir that chezmoi should NOT deploy
+.chezmoiignore — files in the source dir that chezmoi should NOT deploy
 # By default, only files with dot_ prefix are deployed to ~/
 # This file explicitly excludes non-deployable assets
 
@@ -9,6 +9,7 @@ README.md
 validate.sh
 install.sh
 test.sh
+.lib_logging.sh
 
 # Local secrets (API keys, tokens) — never versioned
 dot_config/zsh/secrets
