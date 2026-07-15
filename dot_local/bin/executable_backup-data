@@ -1,12 +1,19 @@
 #!/bin/bash
 # backup-data — rsync DATA → CRUCIAL X8
 # Minimal, clean output. Handles interruptions gracefully.
+set -uo pipefail
 
 SOURCE="$HOME/DATA/"
-DEST="/run/media/iswad/CRUCIAL X8/Ismail/DATA_BACKUP/"
 START=$(date +%s)
 
-# Check destination
+# ─── Find destination (by label, fallback to fixed path) ─────────────────────
+DEST=$(findmnt -n -o TARGET -L "CRUCIAL X8" 2>/dev/null)
+if [ -n "$DEST" ]; then
+  DEST="$DEST/Ismail/DATA_BACKUP/"
+else
+  DEST="/run/media/iswad/CRUCIAL X8/Ismail/DATA_BACKUP/"
+fi
+
 if [ ! -d "$DEST" ]; then
   echo "Error: CRUCIAL X8 not mounted"
   echo "Expected at: $DEST"
@@ -21,9 +28,9 @@ printf "  Data     %s\n" "$(du -sh "$SOURCE" 2>/dev/null | awk '{print $1}')"
 printf "  Free     %s\n" "$(df -h "$DEST" 2>/dev/null | awk 'NR==2{print $4}')"
 echo ""
 
-# Run rsync, capture exit code without set -e interference
+# ─── Rsync ──────────────────────────────────────────────────────────────────
 set +e
-rsync -a --no-group --no-links --info=progress2 \
+rsync -a --no-group --safe-links --partial --info=progress2 \
   --exclude='node_modules/' \
   --exclude='venv/' \
   --exclude='.venv/' \
@@ -35,12 +42,13 @@ rsync -a --no-group --no-links --info=progress2 \
 EXIT_CODE=${PIPESTATUS[0]}
 set -e
 
+# ─── Result ──────────────────────────────────────────────────────────────────
 END=$(date +%s)
 ELAPSED=$((END - START))
 
 echo ""
 if [ "$EXIT_CODE" -eq 0 ] || [ "$EXIT_CODE" -eq 24 ]; then
-  printf "  ✓ Done  (%dm %ds)\n" $((ELAPSED/60)) $((ELAPSED%60))
+  printf "  ✔ Done  (%dm %ds)\n" $((ELAPSED/60)) $((ELAPSED%60))
 else
   printf "  ⚠ Finished (exit %d) — %dm %ds\n" "$EXIT_CODE" $((ELAPSED/60)) $((ELAPSED%60))
 fi
