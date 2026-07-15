@@ -68,8 +68,8 @@ rsync -a --no-group --no-links --partial --info=progress2 \
   --exclude='.Trash-1000/' \
   --exclude='08_VM/Iso_files/' \
   --exclude='.git/' \
-  "$SOURCE" "$DEST" 2>&1 | grep -v "skipping non-regular"
-EXIT_CODE=${PIPESTATUS[0]}
+  "$SOURCE" "$DEST"
+EXIT_CODE=$?
 set -e
 
 # ─── Result ──────────────────────────────────────────────────────────────────
