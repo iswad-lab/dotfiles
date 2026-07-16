@@ -42,10 +42,10 @@ sudo tee /etc/systemd/system/power-profile.service > /dev/null << 'EOF'
 [Unit]
 Description=Power profile - AC/battery CPU/GPU power & temp limits
 After=multi-user.target nvidia-powerd.service
-Wants=nvidia-powerd.service
 
 [Service]
 Type=oneshot
+ExecStartPre=/bin/sleep 3
 ExecStart=/usr/local/bin/power-profile auto
 RemainAfterExit=yes
 Nice=-5
