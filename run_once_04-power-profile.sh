@@ -52,7 +52,7 @@ Nice=-5
 WantedBy=multi-user.target
 EOF
 
-# Write systemd timer (delayed startup, after nvidia-powerd settles)
+# Write systemd timer (delayed startup, ensures ryzenadj applies after all services)
 sudo tee /etc/systemd/system/power-profile.timer > /dev/null << 'EOF'
 [Unit]
 Description=Power profile - delayed startup (30s after boot)
@@ -84,8 +84,7 @@ sudo systemctl enable power-profile.service
 sudo systemctl enable --now power-profile.timer
 sudo systemctl start power-profile.service
 
-# Enable NVIDIA services
-sudo systemctl enable --now nvidia-powerd.service 2>/dev/null || true
+# Enable NVIDIA services (suspend/resume only)
 sudo systemctl enable nvidia-suspend.service nvidia-resume.service 2>/dev/null || true
 
 # Reload udev rules
