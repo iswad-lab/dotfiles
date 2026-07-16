@@ -37,21 +37,32 @@ sudo chmod +x /usr/local/bin/power-profile
 sudo rm -f /etc/systemd/system/ryzenadj-profile.service /etc/udev/rules.d/99-ryzenadj-profile.rules
 sudo systemctl daemon-reload 2>/dev/null
 
-# Write systemd service
+# Write systemd service (triggered by timer + udev)
 sudo tee /etc/systemd/system/power-profile.service > /dev/null << 'EOF'
 [Unit]
 Description=Power profile - AC/battery CPU/GPU power & temp limits
-After=multi-user.target nvidia-powerd.service
 
 [Service]
 Type=oneshot
-ExecStartPre=/bin/sleep 3
 ExecStart=/usr/local/bin/power-profile auto
 RemainAfterExit=yes
 Nice=-5
 
 [Install]
 WantedBy=multi-user.target
+EOF
+
+# Write systemd timer (delayed startup, after nvidia-powerd settles)
+sudo tee /etc/systemd/system/power-profile.timer > /dev/null << 'EOF'
+[Unit]
+Description=Power profile - delayed startup (30s after boot)
+
+[Timer]
+OnBootSec=30
+Persistent=false
+
+[Install]
+WantedBy=timers.target
 EOF
 
 # Write udev rule for AC plug/unplug (calls 'auto' which detects AC/battery)
@@ -67,9 +78,10 @@ if ! lsblk | grep -q zram; then
   sudo sysctl -w vm.swappiness=10 > /dev/null
 fi
 
-# Enable and start service
+# Enable and start service + timer
 sudo systemctl daemon-reload
 sudo systemctl enable power-profile.service
+sudo systemctl enable --now power-profile.timer
 sudo systemctl start power-profile.service
 
 # Enable NVIDIA services
