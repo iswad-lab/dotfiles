@@ -125,14 +125,22 @@ case "${1:-balanced}" in
         fi
 
         # NVIDIA (skip if unavailable)
-        nvidia=""
-        nvidia=$(nvidia-smi --query-gpu=temperature.gpu,power.draw --format=csv,noheader 2>/dev/null) || true
-        if echo "$nvidia" | grep -qP '^\d+'; then
+        nvidia_pci="0000:01:00.0"
+        nvidia_driver=$(readlink "/sys/bus/pci/devices/${nvidia_pci}/driver" 2>/dev/null | xargs basename 2>/dev/null)
+        
+        if [ "$nvidia_driver" = "vfio-pci" ]; then
             echo "├────────────────────────────────────────────┤"
-            nvidia_temp=$(echo "$nvidia" | awk -F', ' '{print $1}')
-            nvidia_pwr=$(echo "$nvidia" | awk -F', ' '{print $2}')
-            printf "│ dGPU temp   │ %-26s │\n" "${nvidia_temp}°C"
-            printf "│ dGPU power  │ %-26s │\n" "$nvidia_pwr"
+            printf "│ dGPU          │ %-26s │\n" "VFIO (off)"
+        else
+            nvidia=""
+            nvidia=$(nvidia-smi --query-gpu=temperature.gpu,power.draw --format=csv,noheader 2>/dev/null) || true
+            if echo "$nvidia" | grep -qP '^\d+'; then
+                echo "├────────────────────────────────────────────┤"
+                nvidia_temp=$(echo "$nvidia" | awk -F', ' '{print $1}')
+                nvidia_pwr=$(echo "$nvidia" | awk -F', ' '{print $2}')
+                printf "│ dGPU temp   │ %-26s │\n" "${nvidia_temp}°C"
+                printf "│ dGPU power  │ %-26s │\n" "$nvidia_pwr"
+            fi
         fi
 
         echo "├────────────────────────────────────────────┤"
