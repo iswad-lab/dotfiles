@@ -1,11 +1,11 @@
 #!/bin/bash
 # power-profile - CPU/GPU power profiles for Ryzen 5800H
-# Switches nbfc config for NVIDIA D3cold on battery (power saving)
 set -uo pipefail
 
 log() { logger -t "power-profile" "$@"; }
 
 # Write a value to all CPU sysfs files (e.g., scaling_governor, scaling_max_freq)
+# Reports errors via log instead of silencing them
 write_cpu_sysfs() {
   local file="$1" val="$2"
   for cpu in /sys/devices/system/cpu/cpu*/cpufreq/"$file"; do
@@ -26,41 +26,6 @@ FAST_AC=30000
 FAST_BAT=18000
 FREQ_AC=3200000
 FREQ_BAT=2400000
-NVIDIA_PCI="0000:01:00.0"
-
-# ------ NVIDIA runtime PM ------
-nvidia_runtime_pm() {
-  local mode="$1"  # "on" or "auto"
-  if [ -f "/sys/bus/pci/devices/${NVIDIA_PCI}/power/control" ]; then
-    echo "$mode" | sudo tee "/sys/bus/pci/devices/${NVIDIA_PCI}/power/control" > /dev/null 2>&1 || true
-  fi
-  # Also for the audio endpoint
-  if [ -f "/sys/bus/pci/devices/0000:01:00.1/power/control" ]; then
-    echo "$mode" | sudo tee "/sys/bus/pci/devices/0000:01:00.1/power/control" > /dev/null 2>&1 || true
-  fi
-}
-
-# ------ nbfc profile switch (AC = with NVIDIA, battery = without) ------
-switch_nbfc_config() {
-  local config="$1"  # "ac" or "battery"
-  local target="/etc/nbfc/nbfc.json"
-  local src_ac="/usr/share/nbfc/configs/iswad-nbfc.json"
-  local src_bat="/usr/share/nbfc/configs/iswad-nbfc-battery.json"
-
-  if [ "$config" = "battery" ] && [ -f "$src_bat" ]; then
-    if ! cmp -s "$src_bat" "$target" 2>/dev/null; then
-      sudo cp "$src_bat" "$target"
-      log "Switch nbfc → battery config (no nvidia-ml)"
-      sudo nbfc restart 2>/dev/null || true
-    fi
-  elif [ "$config" = "ac" ]; then
-    if ! cmp -s "$src_ac" "$target" 2>/dev/null; then
-      sudo cp "$src_ac" "$target"
-      log "Switch nbfc → AC config (with nvidia-ml)"
-      sudo nbfc restart 2>/dev/null || true
-    fi
-  fi
-}
 
 # ------ Performance (unlocked) ------
 apply_perf() {
@@ -70,7 +35,6 @@ apply_perf() {
     write_cpu_sysfs energy_performance_preference performance
     /usr/bin/ryzenadj --stapm-limit=54000 --fast-limit=65000 --slow-limit=54000 \
              --apu-slow-limit=42000 --tctl-temp=90 || log "WARN: ryzenadj perf failed"
-    nvidia_runtime_pm on
     nvidia-smi -rgc > /dev/null 2>&1 || true
     echo ">>> PERF mode: CPU 4.4 GHz / 54W / GPU unlocked"
     log "OK: CPU 4.4 GHz / 54W, GPU unlocked"
@@ -83,62 +47,66 @@ apply_ac() {
     write_cpu_sysfs energy_performance_preference balance_power
     /usr/bin/ryzenadj --stapm-limit=${TDP_AC} --fast-limit=${FAST_AC} --slow-limit=${TDP_AC} \
              --apu-slow-limit=22000 --tctl-temp=${TEMP_AC} 2>&1 || log "WARN: ryzenadj AC failed"
-    nvidia_runtime_pm on
     nvidia-smi -lgc 0,${GPU_AC} > /dev/null 2>&1 || true
-    switch_nbfc_config "ac"
     echo ">>> AC mode: CPU 3.2 GHz / $((TDP_AC / 1000))W / GPU 0–${GPU_AC} MHz (dynamic mem)"
     log "OK: CPU 3.2 GHz / $((TDP_AC / 1000))W, GPU ${GPU_AC} MHz (mem: auto)"
 }
 
 apply_battery() {
-    log "Battery profile: $((FREQ_BAT / 1000000)).$(( (FREQ_BAT / 100000) % 10 )) GHz / $((TDP_BAT / 1000))W"
+    log "Battery profile: $((FREQ_BAT / 1000000)).$(( (FREQ_BAT / 100000) % 10 )) GHz / $((TDP_BAT / 1000))W / GPU ${GPU_BAT} MHz"
     write_cpu_sysfs scaling_governor powersave
     write_cpu_sysfs scaling_max_freq "${FREQ_BAT}"
     write_cpu_sysfs energy_performance_preference power
     /usr/bin/ryzenadj --stapm-limit=${TDP_BAT} --fast-limit=${FAST_BAT} --slow-limit=${TDP_BAT} \
-             --apu-slow-limit=15000 --ctl-temp=${TEMP_BAT} 2>&1 || log "WARN: ryzenadj battery failed"
-    # Let NVIDIA enter D3cold (saves ~8-11W)
-    nvidia_runtime_pm auto
-    switch_nbfc_config "battery"
-    echo ">>> BATTERY mode: CPU $((FREQ_BAT / 1000000)).$(( (FREQ_BAT / 100000) % 10 )) GHz / $((TDP_BAT / 1000))W"
-    log "OK: CPU $((FREQ_BAT / 1000000)).$(( (FREQ_BAT / 100000) % 10 )) GHz / $((TDP_BAT / 1000))W, NVIDIA D3cold"
+             --apu-slow-limit=15000 --tctl-temp=${TEMP_BAT} 2>&1 || log "WARN: ryzenadj battery failed"
+    nvidia-smi -lgc 0,${GPU_BAT} > /dev/null 2>&1 || true
+    nvidia-smi -lmc 405 > /dev/null 2>&1 || true
+    echo ">>> BATTERY mode: CPU $((FREQ_BAT / 1000000)).$(( (FREQ_BAT / 100000) % 10 )) GHz / $((TDP_BAT / 1000))W / GPU ${GPU_BAT} MHz"
+    log "OK: CPU $((FREQ_BAT / 1000000)).$(( (FREQ_BAT / 100000) % 10 )) GHz / $((TDP_BAT / 1000))W, GPU ${GPU_BAT} MHz"
 }
 
 # ------ Main ------
 case "${1:-balanced}" in
-    perf|performance)  apply_perf  ;;
-    ac|secteur)        apply_ac  ;;
-    battery|batterie)  apply_battery  ;;
+    perf|performance)
+        apply_perf  ;;
+    ac|secteur)
+        apply_ac  ;;
+    battery|batterie)
+        apply_battery  ;;
     auto|balanced)
         online=$(cat /sys/class/power_supply/ACAD/online 2>/dev/null || echo 0)
-        if [ "$online" = "1" ]; then apply_ac; else apply_battery; fi
+        if [ "$online" = "1" ]; then
+            apply_ac
+        else
+            apply_battery
+        fi
         ;;
     info)
         gov=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null)
         freq_khz=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 2>/dev/null)
         freq_ghz=$(awk "BEGIN { printf \"%.2f\", $freq_khz / 1000000 }" 2>/dev/null)
+
         temp_cpu=$(sensors 2>/dev/null | grep -E "^Tctl" | awk '{print $2}' | tr -d '+')
         temp_igpu=$(sensors 2>/dev/null | grep -E "^edge" | awk '{print $2}' | tr -d '+')
-        online=$(cat /sys/class/power_supply/ACAD/online 2>/dev/null || echo 0)
-        [ "$online" = "1" ] && pwr="AC" || pwr="BATTERY"
-        [ "$gov" = "performance" ] && mode_label="PERF ($pwr)" || mode_label="BALANCED ($pwr)"
 
-        # Check NVIDIA power state
-        nvidia_state=$(cat /sys/bus/pci/devices/${NVIDIA_PCI}/power/control 2>/dev/null)
-        nvidia_pwr=""
-        if [ "$nvidia_state" = "auto" ]; then
-          nvidia_info="D3cold"
+        # Detect active mode + power source
+        online=$(cat /sys/class/power_supply/ACAD/online 2>/dev/null || echo 0)
+        if [ "$online" = "1" ]; then
+            pwr="AC"
         else
-          nvidia_pwr=$(nvidia-smi --query-gpu=power.draw --format=csv,noheader 2>/dev/null || echo "N/A")
-          nvidia_info="${nvidia_pwr}W"
+            pwr="BATTERY"
+        fi
+
+        if [ "$gov" = "performance" ]; then
+            mode_label="PERF ($pwr)"
+        else
+            mode_label="BALANCED ($pwr)"
         fi
 
         echo "┌────────────────────────────────────────────┐"
         printf "│ %-42s │\n" "Ryzen 5800H — $mode_label"
         echo "├────────────────────────────────────────────┤"
         printf "│ CPU          │ %-26s │\n" "$gov @ ${freq_ghz}GHz"
-        printf "│ Power state  │ %-26s │\n" "${pwr}"
-        printf "│ NVIDIA       │ %-26s │\n" "${nvidia_info}"
 
         limits=$(ryzenadj --info 2>/dev/null | grep -E "STAPM|PPT" | head -6)
         while IFS='|' read -r raw; do
@@ -148,6 +116,7 @@ case "${1:-balanced}" in
         done <<< "$limits"
 
         echo "├────────────────────────────────────────────┤"
+
         if [ -n "$temp_cpu" ]; then
             printf "│ %-12s │ %-26s │\n" "CPU temp" "$temp_cpu"
         fi
@@ -155,19 +124,28 @@ case "${1:-balanced}" in
             printf "│ %-12s │ %-26s │\n" "iGPU temp" "$temp_igpu"
         fi
 
-        # NVIDIA temp (only if awake)
-        nvidia_temp=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader 2>/dev/null || true)
-        if [ -n "$nvidia_temp" ]; then
+        # NVIDIA (skip if unavailable)
+        nvidia=""
+        nvidia=$(nvidia-smi --query-gpu=temperature.gpu,power.draw --format=csv,noheader 2>/dev/null) || true
+        if echo "$nvidia" | grep -qP '^\d+'; then
             echo "├────────────────────────────────────────────┤"
+            nvidia_temp=$(echo "$nvidia" | awk -F', ' '{print $1}')
+            nvidia_pwr=$(echo "$nvidia" | awk -F', ' '{print $2}')
             printf "│ dGPU temp   │ %-26s │\n" "${nvidia_temp}°C"
+            printf "│ dGPU power  │ %-26s │\n" "$nvidia_pwr"
         fi
 
         echo "├────────────────────────────────────────────┤"
+
         nbfc_data=$(nbfc status 2>/dev/null) || true
         sys_temp=$(echo "$nbfc_data" | awk -F': ' '/Temperature/{t=$2} END{print t}')
         fan_speed=$(echo "$nbfc_data" | awk -F': ' '/Current Fan Speed/{s=$2} END{print s}')
-        [ -n "$sys_temp" ] && printf "│ %-12s │ %-26s │\n" "System temp" "$sys_temp"
-        [ -n "$fan_speed" ] && printf "│ %-12s │ %-26s │\n" "Fans speed" "$fan_speed"
+        if [ -n "$sys_temp" ]; then
+            printf "│ %-12s │ %-26s │\n" "System temp" "$sys_temp"
+        fi
+        if [ -n "$fan_speed" ]; then
+            printf "│ %-12s │ %-26s │\n" "Fans speed" "$fan_speed"
+        fi
 
         echo "└────────────────────────────────────────────┘"
         ;;
