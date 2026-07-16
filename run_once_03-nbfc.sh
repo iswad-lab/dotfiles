@@ -78,8 +78,9 @@ else
   sudo sed -i 's/^#IgnorePkg.*/IgnorePkg = nbfc-linux nbfc-qt/' /etc/pacman.conf
 fi
 
-# --- Deploy fan profile (idempotent) -------------------------------------------
+# --- Deploy fan profiles (AC + battery) ------------------------------------
 FAN_PROFILE="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/iswad-nbfc.json"
+FAN_PROFILE_BAT="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/iswad-nbfc-battery.json"
 
 if [ ! -f "$FAN_PROFILE" ]; then
   log_fatal "iswad-nbfc.json not found at $FAN_PROFILE"
@@ -87,17 +88,30 @@ fi
 
 sudo mkdir -p /usr/share/nbfc/configs
 
-# Only copy if content differs
+# Main profile (AC, with nvidia-ml)
 if [ -f /usr/share/nbfc/configs/iswad-nbfc.json ]; then
   if ! cmp -s "$FAN_PROFILE" /usr/share/nbfc/configs/iswad-nbfc.json; then
-    log_info "Updating fan profile..."
+    log_info "Updating fan profile (AC)..."
     sudo cp "$FAN_PROFILE" /usr/share/nbfc/configs/
   else
-    log_pass "Fan profile already up to date"
+    log_pass "Fan profile (AC) already up to date"
   fi
 else
-  log_info "Deploying fan profile..."
+  log_info "Deploying fan profile (AC)..."
   sudo cp "$FAN_PROFILE" /usr/share/nbfc/configs/
+fi
+
+# Battery profile (no nvidia-ml, allows D3cold)
+if [ -f "$FAN_PROFILE_BAT" ]; then
+  if [ -f /usr/share/nbfc/configs/iswad-nbfc-battery.json ]; then
+    if ! cmp -s "$FAN_PROFILE_BAT" /usr/share/nbfc/configs/iswad-nbfc-battery.json; then
+      log_info "Updating fan profile (battery)..."
+      sudo cp "$FAN_PROFILE_BAT" /usr/share/nbfc/configs/
+    fi
+  else
+    log_info "Deploying fan profile (battery)..."
+    sudo cp "$FAN_PROFILE_BAT" /usr/share/nbfc/configs/
+  fi
 fi
 
 # --- Write service config (idempotent) -----------------------------------------
@@ -112,6 +126,24 @@ if [ -f "$NBFB_CONFIG" ]; then
 else
   log_info "Writing NBFC service config..."
   echo "$CURRENT_CONFIG" | sudo tee "$NBFB_CONFIG" > /dev/null
+fi
+
+# --- Deploy early-boot systemd service unit ---------------------------------
+SERVICE_SRC="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/dot_local/share/systemd/nbfc_service.service"
+SERVICE_DST="/usr/local/lib/systemd/system/nbfc_service.service"
+
+if [ -f "$SERVICE_SRC" ]; then
+  if [ -f "$SERVICE_DST" ]; then
+    if ! cmp -s "$SERVICE_SRC" "$SERVICE_DST"; then
+      log_info "Updating nbfc_service.service (early boot)..."
+      sudo cp "$SERVICE_SRC" "$SERVICE_DST"
+    fi
+  else
+    log_info "Deploying nbfc_service.service (early boot)..."
+    sudo cp "$SERVICE_SRC" "$SERVICE_DST"
+  fi
+else
+  log_warn "nbfc_service.service not found in chezmoi source, skipping"
 fi
 
 # --- Enable and restart service (only if something changed) ---------------------

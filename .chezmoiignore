@@ -3,6 +3,7 @@
 # This file explicitly excludes non-deployable assets
 
 iswad-nbfc.json
+iswad-nbfc-battery.json
 packages.pacman
 packages.aur
 README.md
