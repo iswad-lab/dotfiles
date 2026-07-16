@@ -1,0 +1,464 @@
+#!/bin/bash
+# =============================================================================
+# deploy-plugins.sh — Déploie les plugins audio Linux vers les chemins standards
+#
+# Entièrement dynamique : inspecte chaque dossier de Native_Linux/ et détecte
+# automatiquement les formats à déployer (VST3, LV2, CLAP, Standalone).
+#
+# Usage :
+#   ./deploy-plugins.sh                     # copie réelle (défaut)
+#   ./deploy-plugins.sh --link              # lien symbolique
+#   ./deploy-plugins.sh --dry-run           # simulation seulement
+#   ./deploy-plugins.sh --bridged           # configure aussi les plugins yabridge
+#   ./deploy-plugins.sh --clean             # nettoie uniquement les liens morts
+# =============================================================================
+
+set -euo pipefail
+
+# ---- Config ----------------------------------------------------------------
+REPO_DIR="$HOME/DATA/07_Softwares/Linux/Audio_Plugins"
+NATIVE_DIR="$REPO_DIR/Native_Linux"
+BRIDGED_DIR="$REPO_DIR/Bridged_Windows"
+
+MODE="copy"
+DRY_RUN=false
+DEPLOY_BRIDGED=false
+CLEAN_ONLY=false
+
+# Couleurs
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# ---- Arguments -------------------------------------------------------------
+for arg in "$@"; do
+    case "$arg" in
+        --link|--links|--symlink)
+            MODE="symlink"
+            ;;
+        --copy)
+            MODE="copy"
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            ;;
+        --bridged)
+            DEPLOY_BRIDGED=true
+            ;;
+        --clean)
+            CLEAN_ONLY=true
+            ;;
+        --help|-h)
+            echo "Usage: $0 [--link|--copy] [--dry-run] [--bridged] [--clean]"
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}Erreur : argument inconnu : $arg${NC}"
+            echo "Usage: $0 [--link|--copy] [--dry-run] [--bridged] [--clean]"
+            exit 1
+            ;;
+    esac
+done
+
+# ---- Détection architecture (pour plugins multi-arch comme Bertom) ----------
+ARCH=$(uname -m)
+ARCH_DIR=""
+
+if [ "$ARCH" = "x86_64" ]; then
+    if lscpu 2>/dev/null | grep -qi "avx2"; then
+        ARCH_DIR=".avx2"
+    elif lscpu 2>/dev/null | grep -qi "sse2"; then
+        ARCH_DIR=".sse2"
+    fi
+elif [ "$ARCH" = "aarch64" ]; then
+    ARCH_DIR=".arm64"
+fi
+
+# ---- Répertoires cibles ----------------------------------------------------
+VST3_DIR="$HOME/.vst3"
+LV2_DIR="$HOME/.lv2"
+CLAP_DIR="$HOME/.clap"
+VST_DIR="$HOME/.vst"
+BIN_DIR="$HOME/.local/bin"
+
+mkdir -p "$VST3_DIR" "$LV2_DIR" "$CLAP_DIR" "$VST_DIR" "$BIN_DIR"
+
+# ---- Compteurs -------------------------------------------------------------
+COUNT_VST3=0
+COUNT_LV2=0
+COUNT_CLAP=0
+COUNT_BIN=0
+
+# ---- Fonctions utilitaires -------------------------------------------------
+log() {
+    if $DRY_RUN; then
+        echo -e "${YELLOW}[DRY-RUN]${NC} $1"
+    else
+        echo -e "${GREEN}[DEPLOY]${NC} $1"
+    fi
+}
+
+deploy_item() {
+    local src="$1"
+    local dst="$2"
+    local label="$3"
+
+    # Si la destination existe déjà et est identique, on skip
+    # (sauf en dry-run où on veut voir ce qui serait déployé)
+    if ! $DRY_RUN && [ -e "$dst" ] && [ "$MODE" = "copy" ]; then
+        if [ -d "$src" ] && [ -d "$dst" ]; then
+            if diff -rq "$src" "$dst" &>/dev/null; then
+                return
+            fi
+        elif [ -f "$src" ] && [ -f "$dst" ]; then
+            if cmp -s "$src" "$dst"; then
+                return
+            fi
+        fi
+    fi
+
+    if [ -e "$dst" ] || [ -L "$dst" ]; then
+        rm -rf "$dst"
+    fi
+
+    if $DRY_RUN; then
+        if [ "$MODE" = "copy" ]; then
+            echo "         cp -r '${src}' '${dst}'"
+        else
+            echo "         ln -s '${src}' '${dst}'"
+        fi
+    else
+        if [ "$MODE" = "copy" ]; then
+            cp -r "$src" "$dst"
+        else
+            ln -s "$src" "$dst"
+        fi
+    fi
+
+    case "$label" in
+        VST3) COUNT_VST3=$((COUNT_VST3 + 1)) ;;
+        LV2)  COUNT_LV2=$((COUNT_LV2 + 1))   ;;
+        CLAP) COUNT_CLAP=$((COUNT_CLAP + 1)) ;;
+        BIN)  COUNT_BIN=$((COUNT_BIN + 1))   ;;
+    esac
+}
+
+# =============================================================================
+# DÉTECTION ET DÉPLOIEMENT D'UN PLUGIN
+#
+# Pour un dossier donné dans Native_Linux/, on teste TOUS les patterns
+# possibles d'organisation et on déploie ce qui correspond.
+# =============================================================================
+deploy_plugin_dir() {
+    local plugin_dir="$1"
+    local plugin_name
+    plugin_name=$(basename "$plugin_dir")
+
+    # --- Pattern 1 : Le dossier est LUI-MÊME un bundle .vst3 -----------------
+    if [[ "$plugin_name" == *.vst3 ]]; then
+        local dst="$VST3_DIR/$plugin_name"
+        log "VST3 : $plugin_name → $dst"
+        deploy_item "$plugin_dir" "$dst" "VST3"
+        return
+    fi
+
+    # --- Pattern 2 : Dossier multi-arch (Bertom-style) -----------------------
+    #    .sse2/Plugin.vst3, .avx2/Plugin.vst3, .arm64/Plugin.vst3
+    if [ -n "$ARCH_DIR" ]; then
+        local arch_path="$plugin_dir/$ARCH_DIR"
+        if [ -d "$arch_path" ]; then
+            local found=false
+            while IFS= read -r -d '' vst3_bundle; do
+                local bundle_name
+                bundle_name=$(basename "$vst3_bundle")
+                local dst="$VST3_DIR/$bundle_name"
+                log "VST3 (${ARCH_DIR#.}) : $bundle_name → $dst"
+                deploy_item "$vst3_bundle" "$dst" "VST3"
+                found=true
+            done < <(find "$arch_path" -maxdepth 2 -name "*.vst3" -type d -print0 2>/dev/null)
+
+            if $found; then
+                return  # Ne pas chercher d'autres patterns, l'archi a priorité
+            fi
+        fi
+    fi
+
+    # --- Pattern 3 : Sous-dossiers standards LV2/, VST3/, CLAP/, Standalone/ --
+    #     (structure utilisée par ZL Devices, et beaucoup de plugins)
+    local has_standard_subdirs=false
+
+    # LV2/
+    if [ -d "$plugin_dir/LV2" ]; then
+        has_standard_subdirs=true
+        while IFS= read -r -d '' lv2_bundle; do
+            local name
+            name=$(basename "$lv2_bundle")
+            local dst="$LV2_DIR/$name"
+            log "LV2 : $name → $dst"
+            deploy_item "$lv2_bundle" "$dst" "LV2"
+        done < <(find "$plugin_dir/LV2" -maxdepth 2 -name "*.lv2" -type d -print0 2>/dev/null)
+    fi
+
+    # VST3/
+    if [ -d "$plugin_dir/VST3" ]; then
+        has_standard_subdirs=true
+        while IFS= read -r -d '' vst3_bundle; do
+            local name
+            name=$(basename "$vst3_bundle")
+            local dst="$VST3_DIR/$name"
+            log "VST3 : $name → $dst"
+            deploy_item "$vst3_bundle" "$dst" "VST3"
+        done < <(find "$plugin_dir/VST3" -maxdepth 2 -name "*.vst3" -type d -print0 2>/dev/null)
+    fi
+
+    # CLAP/
+    if [ -d "$plugin_dir/CLAP" ]; then
+        has_standard_subdirs=true
+        while IFS= read -r -d '' clap_file; do
+            local name
+            name=$(basename "$clap_file")
+            local dst="$CLAP_DIR/$name"
+            log "CLAP : $name → $dst"
+            deploy_item "$clap_file" "$dst" "CLAP"
+        done < <(find "$plugin_dir/CLAP" -maxdepth 2 \( -name "*.clap" -o -name "*.so" \) -type f -print0 2>/dev/null)
+    fi
+
+    # Standalone/
+    if [ -d "$plugin_dir/Standalone" ]; then
+        has_standard_subdirs=true
+        while IFS= read -r -d '' bin_file; do
+            if [ -x "$bin_file" ]; then
+                local name
+                name=$(basename "$bin_file")
+                local dst="$BIN_DIR/$name"
+                log "BIN : $name → $dst"
+                deploy_item "$bin_file" "$dst" "BIN"
+            fi
+        done < <(find "$plugin_dir/Standalone" -maxdepth 2 -type f -print0 2>/dev/null)
+    fi
+
+    if $has_standard_subdirs; then
+        return
+    fi
+
+    # --- Pattern 4 : Bundles plats à la racine du dossier --------------------
+    #    (structure utilisée par Dragonfly, TAL-Reverb-4, etc.)
+    local has_flat_bundles=false
+
+    # Bundles .vst3 plats
+    while IFS= read -r -d '' vst3_bundle; do
+        has_flat_bundles=true
+        local name
+        name=$(basename "$vst3_bundle")
+        local dst="$VST3_DIR/$name"
+        log "VST3 : $name → $dst"
+        deploy_item "$vst3_bundle" "$dst" "VST3"
+    done < <(find "$plugin_dir" -maxdepth 1 -name "*.vst3" -type d -print0 2>/dev/null)
+
+    # Bundles .lv2 plats
+    while IFS= read -r -d '' lv2_bundle; do
+        has_flat_bundles=true
+        local name
+        name=$(basename "$lv2_bundle")
+        local dst="$LV2_DIR/$name"
+        log "LV2 : $name → $dst"
+        deploy_item "$lv2_bundle" "$dst" "LV2"
+    done < <(find "$plugin_dir" -maxdepth 1 -name "*.lv2" -type d -print0 2>/dev/null)
+
+    # Fichiers .clap plats (et leur .so d'accompagnement)
+    while IFS= read -r -d '' clap_file; do
+        has_flat_bundles=true
+        local name
+        name=$(basename "$clap_file")
+        local dst="$CLAP_DIR/$name"
+        log "CLAP : $name → $dst"
+        deploy_item "$clap_file" "$dst" "CLAP"
+    done < <(find "$plugin_dir" -maxdepth 1 -name "*.clap" -type f -print0 2>/dev/null)
+
+    # Bibliothèques .so compagnon des .clap (ex: libTAL-Reverb-4.so)
+    # Seules les librairies commençant par "lib" sont des dépendances CLAP
+    # Les fichiers comme DragonflyEarlyReflections-vst.so sont des wrappers VST2
+    while IFS= read -r -d '' so_file; do
+        local so_name
+        so_name=$(basename "$so_file")
+        if [[ "$so_name" == lib* ]] && find "$plugin_dir" -maxdepth 1 -name "*.clap" -type f 2>/dev/null | grep -q .; then
+            local dst="$CLAP_DIR/$so_name"
+            log "CLAP lib : $so_name → $dst"
+            deploy_item "$so_file" "$dst" "CLAP"
+        fi
+    done < <(find "$plugin_dir" -maxdepth 1 -name "*.so" -type f -print0 2>/dev/null)
+
+    if $has_flat_bundles; then
+        return
+    fi
+
+    # --- Pattern 5 : Exécutables standalone directement à la racine -----------
+    local has_bins=false
+    while IFS= read -r -d '' bin_file; do
+        if [ -x "$bin_file" ] && [ ! -d "$bin_file" ] && [[ ! "$bin_file" == *.sh ]] && [[ ! "$bin_file" == *.md ]] && [[ ! "$bin_file" == *.txt ]]; then
+            has_bins=true
+            local name
+            name=$(basename "$bin_file")
+            local dst="$BIN_DIR/$name"
+            log "BIN : $name → $dst"
+            deploy_item "$bin_file" "$dst" "BIN"
+        fi
+    done < <(find "$plugin_dir" -maxdepth 1 -type f -print0 2>/dev/null)
+
+    if ! $has_bins; then
+        # Si rien n'a été déployé du tout, signaler
+        echo -e "${YELLOW}  ⚠ $plugin_name : aucun format reconnu (ignoré)${NC}"
+    fi
+}
+
+# =============================================================================
+# DÉPLOIEMENT BRIDGÉ (yabridge)
+# =============================================================================
+deploy_bridged() {
+    echo -e "\n${CYAN}═══════════════ Bridged Windows (yabridge) ═══════════════${NC}"
+    [ -d "$BRIDGED_DIR" ] || { echo -e "${YELLOW}  Aucun dossier Bridged_Windows/ trouvé.${NC}"; return; }
+
+    local bridged_vst3="$VST3_DIR/bridged"
+    if ! $DRY_RUN; then
+        mkdir -p "$bridged_vst3"
+    fi
+    log "Dossier cible : $bridged_vst3"
+
+    local found=false
+
+    # Fichiers .vst3 isolés à la racine
+    while IFS= read -r -d '' f; do
+        local name
+        name=$(basename "$f")
+        local dst="$bridged_vst3/$name"
+        log "VST3 : $name → $dst"
+        deploy_item "$f" "$dst" "VST3"
+        found=true
+    done < <(find "$BRIDGED_DIR" -maxdepth 1 -name "*.vst3" -type f -print0 2>/dev/null)
+
+    # Dossiers de plugins
+    while IFS= read -r -d '' d; do
+        local dir_name
+        dir_name=$(basename "$d")
+        local dst="$bridged_vst3/$dir_name"
+
+        # Contient des .dll ou .vst3 directement → lien dossier
+        if ls "$d"/*.dll "$d"/*.vst3 2>/dev/null >/dev/null; then
+            log "Plugin : $dir_name → $dst"
+            deploy_item "$d" "$dst" "VST3"
+            found=true
+        # Structure TDR (VST2/, VST3/, AAX/) → lien dossier
+        elif [ -d "$d/VST3" ] || [ -d "$d/VST2" ]; then
+            log "Plugin : $dir_name → $dst"
+            deploy_item "$d" "$dst" "VST3"
+            found=true
+        fi
+    done < <(find "$BRIDGED_DIR" -mindepth 1 -maxdepth 1 -type d -print0 2>/dev/null)
+
+    if ! $found; then
+        echo -e "${YELLOW}  Aucun plugin bridgé trouvé.${NC}"
+    fi
+
+    echo -e "\n${YELLOW}  ⚠  N'oublie pas de configurer yabridge :"
+    echo -e "      yabridgectl add \"$bridged_vst3\""
+    echo -e "      yabridgectl sync${NC}"
+}
+
+# =============================================================================
+# NETTOYAGE
+# =============================================================================
+cleanup_dead_links() {
+    echo -e "${CYAN}═══════════════ Nettoyage des liens morts ═════════════════${NC}"
+    local total=0
+    for dir in "$VST3_DIR" "$LV2_DIR" "$CLAP_DIR" "$VST_DIR" "$BIN_DIR"; do
+        if [ -d "$dir" ]; then
+            local count
+            count=$(find -L "$dir" -maxdepth 2 -type l 2>/dev/null | wc -l)
+            if [ "$count" -gt 0 ]; then
+                if $DRY_RUN; then
+                    echo -e "${YELLOW}[DRY-RUN]${NC} Supprimerait $count lien(s) dans $dir"
+                else
+                    find -L "$dir" -maxdepth 2 -type l -delete 2>/dev/null || true
+                    echo -e "${GREEN}[CLEAN]${NC} $count lien(s) mort(s) supprimé(s) dans $dir"
+                fi
+                total=$((total + count))
+            fi
+        fi
+    done
+    if [ "$total" -eq 0 ]; then
+        echo -e "  Aucun lien mort trouvé."
+    fi
+}
+
+# =============================================================================
+# AFFICHAGE RÉSUMÉ
+# =============================================================================
+print_summary() {
+    echo -e "\n${GREEN}═══════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}  Déploiement terminé !${NC}"
+    echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
+
+    echo -e "\n${CYAN}Résumé :${NC}"
+    echo -e "  VST3 → $VST3_DIR  ($COUNT_VST3 déployé(s))"
+    echo -e "  LV2  → $LV2_DIR   ($COUNT_LV2 déployé(s))"
+    echo -e "  CLAP → $CLAP_DIR  ($COUNT_CLAP déployé(s))"
+    echo -e "  BIN  → $BIN_DIR   ($COUNT_BIN déployé(s))"
+
+        if [ "$MODE" = "symlink" ]; then
+            echo -e "\n${YELLOW}⚠  Liens symboliques — ne déplace/supprime pas le dossier"
+            echo -e "   Audio_Plugins/ après déploiement.${NC}"
+        fi
+}
+
+# =============================================================================
+# MAIN
+# =============================================================================
+echo -e "${CYAN}╔══════════════════════════════════════════════════════════╗${NC}"
+echo -e "${CYAN}║        Déploiement des plugins audio — Dynamique        ║${NC}"
+echo -e "${CYAN}╠══════════════════════════════════════════════════════════╣${NC}"
+if [ "$MODE" = "symlink" ]; then
+    echo -e "${CYAN}║  Mode : liens symboliques${NC}"
+else
+    echo -e "${CYAN}║  Mode : copie réelle${NC}"
+fi
+if $DRY_RUN; then
+    echo -e "${CYAN}║  Simulation : OUI${NC}"
+fi
+if $DEPLOY_BRIDGED; then
+    echo -e "${CYAN}║  Bridgés : OUI${NC}"
+fi
+echo -e "${CYAN}║  Architecture : $ARCH${NC}"
+[ -n "$ARCH_DIR" ] && echo -e "${CYAN}║  Optimisation : ${ARCH_DIR#.}${NC}"
+echo -e "${CYAN}╚══════════════════════════════════════════════════════════╝${NC}"
+
+# Mode --clean uniquement
+if $CLEAN_ONLY; then
+    cleanup_dead_links
+    exit 0
+fi
+
+# Scanner Native_Linux/
+if [ -d "$NATIVE_DIR" ]; then
+    echo -e "\n${CYAN}═══════════════ Plugins natifs Linux ═══════════════${NC}"
+    while IFS= read -r -d '' plugin_dir; do
+        name=$(basename "$plugin_dir")
+        echo -e "\n${CYAN}── $name ──${NC}"
+        deploy_plugin_dir "$plugin_dir"
+    done < <(find "$NATIVE_DIR" -mindepth 1 -maxdepth 1 -type d -print0 2>/dev/null | sort -z)
+else
+    echo -e "\n${RED}Erreur : dossier Native_Linux/ introuvable dans $REPO_DIR${NC}"
+    exit 1
+fi
+
+# Bridgés (optionnel)
+if $DEPLOY_BRIDGED; then
+    deploy_bridged
+fi
+
+# Nettoyage
+cleanup_dead_links
+
+# Résumé
+print_summary
