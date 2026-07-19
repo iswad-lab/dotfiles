@@ -25,7 +25,7 @@ reapack
 sws
 yabridge                    # Windows VST bridge (prebuilt, Wine-version agnostic)
 yabridgectl                 # yabridge management utility
-# wine-staging 9.21 pinned — installed via run_once_02-wine-staging.sh
+# wine-staging 9.21 — standalone runner (via run_once_02-wine-staging.sh)
 winetricks
 qpwgraph
 easyeffects
@@ -39,6 +39,7 @@ nvtop
 
 # --- Network & Security ------------------------------------------------------
 openssh
+samba                       # winbind (ntlm_auth) pour Wine - requis par certains plugins VST
 ufw
 proton-vpn-cli
 

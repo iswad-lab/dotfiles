@@ -15,7 +15,7 @@ dotfiles/
 ├── install.sh                        # bootstrap (paru + chezmoi + apply, --dry-run)
 ├── validate.sh                       # post-install verification script
 ├── run_once_01-packages.sh           # pacman + AUR packages
-├── run_once_02-wine-staging.sh       # wine-staging 9.21 (yabridge compat)
+├── run_once_02-wine-staging.sh       # wine-staging 9.21 standalone runner
 ├── run_once_03-nbfc.sh               # nbfc-linux + nbfc-qt (forks)
 ├── run_once_04-power-profile.sh      # RyzenAdj + NVIDIA power profiles
 ├── run_once_05-vfio-setup.sh         # GPU passthrough (VFIO)
@@ -59,6 +59,7 @@ dotfiles/
 - **Virtualization**: QEMU + virt-manager + distrobox
 - **Fan control**: nbfc-linux (fork iswad-lab)
 - **Power mgmt**: RyzenAdj + NVIDIA power profiles (AC/battery auto)
+- **Wine**: wine-staging 9.21 standalone runner (~/.local/share/wine-runners/)
 - **Peripherals**: Logitech MX Master 3S (logiops)
 
 ## Aliases
