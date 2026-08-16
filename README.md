@@ -60,7 +60,7 @@ dotfiles/
 - **Fan control**: nbfc-linux (fork iswad-lab)
 - **Power mgmt**: RyzenAdj + NVIDIA power profiles (AC/battery auto)
 - **Wine**: wine-staging 9.21 standalone runner (~/.local/share/wine-runners/)
-- **Peripherals**: Logitech MX Master 3S (logiops)
+- **Peripherals**: Logitech MX Master 3S (logiops) + MX Keys S (solaar)
 
 ## Aliases
 
@@ -68,7 +68,7 @@ dotfiles/
 |---|---|
 | `ff` | fastfetch |
 | `ww` | One-time boot to Windows |
-| `pp` | One-time boot to VFIO GPU passthrough kernel |
+| `vv` | One-time boot to VFIO GPU passthrough kernel |
 | `ll` | One-time boot to default Linux kernel |
 | `backup` | Backup DATA to external drive |
 | `power` | Show power profile status (CPU/GPU temps, limits, fans) |

@@ -27,7 +27,7 @@ alias ff='fastfetch'
 alias ww="limine-boot-win"
 
 # --- Boot to VFIO kernel (GPU passthrough) ---
-alias pp="limine-boot-vfio"
+alias vv="limine-boot-vfio"
 
 # --- Boot to default Linux kernel ---
 alias ll="limine-boot-linux"
