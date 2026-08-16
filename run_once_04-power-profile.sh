@@ -34,7 +34,7 @@ sudo cp "$SCRIPT_DIR/dot_local/bin/executable_power-profile" /usr/local/bin/powe
 sudo chmod +x /usr/local/bin/power-profile
 
 # Remove old service/udev if they exist (from ryzenadj-profile rename)
-sudo rm -f /etc/systemd/system/ryzenadj-profile.service /etc/udev/rules.d/99-ryzenadj-profile.rules
+sudo rm -f /etc/systemd/system/ryzenadj-profile.service /etc/systemd/system/ryzenadj.service /etc/systemd/system/ryzenadj.timer /etc/udev/rules.d/99-ryzenadj-profile.rules
 sudo systemctl daemon-reload 2>/dev/null
 
 # Write systemd service (starts at boot, triggered by udev on AC plug/unplug)
@@ -52,7 +52,18 @@ Nice=-5
 WantedBy=multi-user.target
 EOF
 
-sudo rm -f /etc/systemd/system/power-profile.timer
+# Write timer: periodic re-apply (workaround for EC/firmware overriding limits)
+sudo tee /etc/systemd/system/power-profile.timer > /dev/null << 'EOF'
+[Unit]
+Description=Power profile - periodic re-apply (EC override workaround)
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target
+EOF
 
 # Write udev rule for AC plug/unplug (calls 'auto' which detects AC/battery)
 sudo tee /etc/udev/rules.d/99-power-profile.rules > /dev/null << 'EOF'
@@ -70,6 +81,7 @@ fi
 # Enable and start service
 sudo systemctl daemon-reload
 sudo systemctl enable --now power-profile.service
+sudo systemctl enable --now power-profile.timer
 
 # Enable NVIDIA services (suspend/resume only)
 sudo systemctl enable nvidia-suspend.service nvidia-resume.service 2>/dev/null || true

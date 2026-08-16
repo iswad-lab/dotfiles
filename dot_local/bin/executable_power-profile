@@ -76,7 +76,12 @@ case "${1:-balanced}" in
         apply_ac  ;;
     battery|batterie)
         apply_battery  ;;
-    auto|balanced)
+    auto|balanced|guard)
+        # guard: periodic re-apply (EC/firmware override workaround) - never clobber manual perf mode
+        if [ "${1:-}" = "guard" ] && [ "$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null)" = "performance" ]; then
+            log "guard: PERF mode actif, re-apply ignore"
+            exit 0
+        fi
         online=$(cat /sys/class/power_supply/ACAD/online 2>/dev/null || echo 0)
         if [ "$online" = "1" ]; then
             apply_ac
@@ -161,7 +166,7 @@ case "${1:-balanced}" in
         echo "└────────────────────────────────────────────┘"
         ;;
     *)
-        echo "Usage: $0 {balanced|perf|ac|battery|info}"
+        echo "Usage: $0 {balanced|perf|ac|battery|guard|info}"
         exit 1
         ;;
 esac
