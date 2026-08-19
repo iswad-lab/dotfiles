@@ -100,10 +100,10 @@ if grep -q "vfio" /etc/mkinitcpio.conf 2>/dev/null; then
 else
   log_fail "VFIO modules missing"
 fi
-if [ -f /etc/cmdline.d/vfio.conf ]; then
-  log_pass "VFIO cmdline"
+if [ ! -f /etc/cmdline.d/vfio.conf ]; then
+  log_pass "VFIO cmdline via Limine entry (no /etc/cmdline.d)"
 else
-  log_fail "VFIO cmdline missing"
+  log_fail "Stale /etc/cmdline.d/vfio.conf present - ids should live in the Limine VFIO entry only"
 fi
 
 # ─── Power profile ──────────────────────────────────────────────────────────

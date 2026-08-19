@@ -44,20 +44,9 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# 2. Create kernel cmdline snippet for VFIO (systemd kernel-install)
+# 2. Remove stale kernel cmdline snippet (ids are hardcoded in the Limine VFIO entry)
 # ---------------------------------------------------------------------------
-CMDLINE_DIR="/etc/cmdline.d"
-CMDLINE_FILE="$CMDLINE_DIR/vfio.conf"
-
-sudo mkdir -p "$CMDLINE_DIR"
-
-if [ -f "$CMDLINE_FILE" ]; then
-  log_skip "$CMDLINE_FILE already exists"
-else
-  echo 'iommu=pt vfio-pci.ids=10de:249d,10de:228b' | sudo tee "$CMDLINE_FILE" > /dev/null
-  log_detail "Created $CMDLINE_FILE"
-  NEEDS_MKINITCPIO=true
-fi
+sudo rm -f /etc/cmdline.d/vfio.conf 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
 # 3. Regenerate initramfs (only if something changed)
