@@ -1,6 +1,6 @@
-# Dotfiles — Iswad
+# Iswad's Dotfiles
 
-Reproducible setup for **CachyOS x86_64** — KDE Plasma 6 (Wayland).
+Reproducible setup for **CachyOS x86_64** (KDE Plasma 6, Wayland).
 
 ## Installation
 
@@ -17,7 +17,7 @@ dotfiles/
 ├── run_once_01-packages.sh           # pacman + AUR packages
 ├── run_once_02-wine-staging.sh       # wine-staging 9.21 standalone runner
 ├── run_once_03-nbfc.sh               # nbfc-linux + nbfc-qt (forks)
-├── run_once_04-power-profile.sh      # RyzenAdj + NVIDIA power profiles
+├── run_once_04-power-profile.sh      # RyzenAdj + NVIDIA power profiles + EC re-apply timer
 ├── run_once_05-vfio-setup.sh         # GPU passthrough (VFIO)
 ├── run_once_06-libvirt-setup.sh      # libvirt services + groups
 ├── run_once_07-looking-glass.sh      # Looking Glass shared memory
@@ -48,17 +48,18 @@ dotfiles/
 | **RAM** | 2× 16 GB DDR4-3200 |
 | **Storage** | SK Hynix 512 GB (NVMe) + Crucial 1 TB (NVMe) |
 | **Network** | Realtek RTL8111/8168 (Ethernet) + Intel Wi-Fi 6 AX200 |
+| **Display** | LG UltraGear 27GP850 (2560x1440 @ 144 Hz, DP, wired to the dGPU: no external output on the iGPU) |
 
 ## Stack
 
-- **OS**: Dualboot — Linux (CachyOS) + Windows 11
+- **OS**: Dualboot (Linux CachyOS + Windows 11)
 - **Shell**: zsh + Powerlevel10k
 - **DE**: KDE Plasma 6 (Wayland)
-- **GPU**: NVIDIA RTX 3070 + AMD Vega — VFIO passthrough for VM
+- **GPU**: NVIDIA RTX 3070 + AMD Vega (VFIO passthrough for VM)
 - **Audio**: Pipewire (JACK) + REAPER + yabridge (Windows VST bridge)
 - **Virtualization**: QEMU + virt-manager + distrobox
 - **Fan control**: nbfc-linux (fork iswad-lab)
-- **Power mgmt**: RyzenAdj + NVIDIA power profiles (AC/battery auto)
+- **Power mgmt**: RyzenAdj + NVIDIA power profiles (AC/battery auto, re-applied every 5 min against EC/firmware override)
 - **Wine**: wine-staging 9.21 standalone runner (~/.local/share/wine-runners/)
 - **Peripherals**: Logitech MX Master 3S (logiops) + MX Keys S (solaar)
 
@@ -77,5 +78,5 @@ dotfiles/
 
 ## Notes
 
-- **SSH keys** (`~/.ssh/id_*`): backup manually before reinstall — too sensitive for dotfiles.
+- **SSH keys** (`~/.ssh/id_*`): backup manually before reinstall (too sensitive for dotfiles).
 - **KDE config** (shortcuts, panel, kwin) versioned in `dot_config/`.
