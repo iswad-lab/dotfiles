@@ -21,12 +21,15 @@ dotfiles/
 ├── run_once_05-vfio-setup.sh         # GPU passthrough (VFIO)
 ├── run_once_06-libvirt-setup.sh      # libvirt services + groups
 ├── run_once_07-looking-glass.sh      # Looking Glass shared memory
+├── run_once_08-kde-settings.sh       # KDE settings enforced via kwriteconfig6
 ├── packages.pacman                   # official repo packages
 ├── packages.aur                      # AUR packages
 ├── iswad-nbfc.json                    # custom fan profile (NBFC)
 ├── dot_config/
 │   ├── gh/                           # GitHub CLI config
-│   └── *.rc                          # KDE Plasma config (shortcuts, panel, kwin)
+│   ├── create_dot_config/             # created only if absent (Plasma owns it afterwards)
+│   │   └── plasma-*.appletsrc         # panel/widgets layout (volatile → apply once)
+│   └── *.rc                           # KDE Plasma config (shortcuts, panel, kwin)
 ├── dot_local/
 │   ├── bin/                          # boot scripts, profiles
 │   │   ├── limine-boot-win           # one-time boot to Windows
