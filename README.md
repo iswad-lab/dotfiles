@@ -64,7 +64,7 @@ dotfiles/
 - **Fan control**: nbfc-linux (fork iswad-lab)
 - **Power mgmt**: RyzenAdj + NVIDIA power profiles (AC/battery auto, re-applied every 5 min against EC/firmware override)
 - **Wine**: wine-staging 9.21 standalone runner (~/.local/share/wine-runners/)
-- **Peripherals**: Logitech MX Master 3S (logiops) + MX Keys S (solaar)
+- **Peripherals**: Logitech MX Master 3S (logiops)
 
 ## Aliases
 

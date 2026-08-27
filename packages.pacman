@@ -88,6 +88,3 @@ bitwarden                   # password manager
 bitwarden-cli               # CLI vault (SSH keys, backup)
 localsend                   # AirDrop-like file sharing
 # davinci-resolve             # optional, validate before deploying
-
-# --- Peripherals ------------------------------------------------------------
-solaar                      # Logitech devices config (MX Keys S keyboard)

@@ -107,11 +107,4 @@ EOF
   sudo systemctl enable --now logid.service 2>/dev/null || true
 fi
 
-# --- Logitech keyboard (MX Keys S) ------------------------------------------
-if command -v solaar &>/dev/null; then
-  log_info "Configuring Logitech MX Keys S via Solaar..."
-  systemctl --user enable --now solaar.service 2>/dev/null || true
-  log_detail "Tune Fn lock / backlight / Easy Switch via the Solaar GUI (solaar)."
-fi
-
 log_pass "Packages installed successfully."
