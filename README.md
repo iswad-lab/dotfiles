@@ -29,6 +29,8 @@ dotfiles/
 │   ├── gh/                           # GitHub CLI config
 │   ├── create_dot_config/             # created only if absent (Plasma owns it afterwards)
 │   │   └── plasma-*.appletsrc         # panel/widgets layout (volatile → apply once)
+│   ├── pipewire/pipewire.conf.d/      # PipeWire: quantum global + mode propriétaire RME (TuxMix)
+│   ├── wireplumber/wireplumber.conf.d/# WirePlumber: règles par interface RME (CC) + Ryzen onboard
 │   └── *.rc                           # KDE Plasma config (shortcuts, panel, kwin)
 ├── dot_local/
 │   ├── bin/                          # boot scripts, profiles
@@ -83,3 +85,13 @@ dotfiles/
 
 - **SSH keys** (`~/.ssh/id_*`): backup manually before reinstall (too sensitive for dotfiles).
 - **KDE config** (shortcuts, panel, kwin) versioned in `dot_config/`.
+- **Audio PipeWire** — config versioned in `dot_config/pipewire/` and
+  `dot_config/wireplumber/`:
+  - **RME Babyface Pro FS** basculable entre mode **CC** (kernel driver,
+    `51-rme.conf`) et mode **propriétaire** (driver maison TuxMix via
+    `50-tuxmix.conf`) — voir
+    `dot_config/pipewire/pipewire.conf.d/README.md`.
+  - **Quantum par interface** : global = 64 (RME CC), mais la carte interne
+    Ryzen force 256 (`52-ryzen-quantum.conf`) — le 64 y cause des sous-runs.
+- Ces règles de quantum/noms de nœud sont propres à ce laptop (Ryzen
+  `pci-0000_07_00.6`, RME USB) — pas prévu pour d'autres machines.
