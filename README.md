@@ -1,4 +1,4 @@
-# Iswad's Dotfiles
+# My Dotfiles
 
 Reproducible setup for **CachyOS x86_64** (KDE Plasma 6, Wayland).
 
@@ -24,7 +24,7 @@ dotfiles/
 ├── run_once_08-kde-settings.sh       # KDE settings enforced via kwriteconfig6
 ├── packages.pacman                   # official repo packages
 ├── packages.aur                      # AUR packages
-├── iswad-nbfc.json                    # custom fan profile (NBFC)
+├── my-nbfc.json                       # custom fan profile (NBFC)
 ├── dot_config/
 │   ├── gh/                           # GitHub CLI config
 │   ├── create_dot_config/             # created only if absent (Plasma owns it afterwards)

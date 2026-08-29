@@ -180,7 +180,7 @@ fi
 # ─── NBFC ───────────────────────────────────────────────────────────────────
 log_section "NBFC"
 
-if [ -f /usr/share/nbfc/configs/iswad-nbfc.json ]; then
+if [ -f /usr/share/nbfc/configs/my-nbfc.json ]; then
   log_pass "Fan profile deployed"
 else
   log_fail "Fan profile missing"

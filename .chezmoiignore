@@ -2,7 +2,7 @@
 # By default, only files with dot_ prefix are deployed to ~/
 # This file explicitly excludes non-deployable assets
 
-iswad-nbfc.json
+my-nbfc.json
 packages.pacman
 packages.aur
 README.md

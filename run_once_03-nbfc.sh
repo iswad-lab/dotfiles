@@ -79,17 +79,17 @@ else
 fi
 
 # --- Deploy fan profile (idempotent) -------------------------------------------
-FAN_PROFILE="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/iswad-nbfc.json"
+FAN_PROFILE="${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/my-nbfc.json"
 
 if [ ! -f "$FAN_PROFILE" ]; then
-  log_fatal "iswad-nbfc.json not found at $FAN_PROFILE"
+  log_fatal "my-nbfc.json not found at $FAN_PROFILE"
 fi
 
 sudo mkdir -p /usr/share/nbfc/configs
 
 # Only copy if content differs
-if [ -f /usr/share/nbfc/configs/iswad-nbfc.json ]; then
-  if ! cmp -s "$FAN_PROFILE" /usr/share/nbfc/configs/iswad-nbfc.json; then
+if [ -f /usr/share/nbfc/configs/my-nbfc.json ]; then
+  if ! cmp -s "$FAN_PROFILE" /usr/share/nbfc/configs/my-nbfc.json; then
     log_info "Updating fan profile..."
     sudo cp "$FAN_PROFILE" /usr/share/nbfc/configs/
   else
@@ -103,7 +103,7 @@ fi
 # --- Write service config (idempotent) -----------------------------------------
 sudo mkdir -p /etc/nbfc
 NBFB_CONFIG="/etc/nbfc/nbfc.json"
-CURRENT_CONFIG='{"SelectedConfigId": "iswad-nbfc"}'
+CURRENT_CONFIG='{"SelectedConfigId": "my-nbfc"}'
 if [ -f "$NBFB_CONFIG" ]; then
   if [ "$(cat "$NBFB_CONFIG")" != "$CURRENT_CONFIG" ]; then
     log_info "Updating NBFC service config..."
