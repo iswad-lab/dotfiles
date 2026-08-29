@@ -3,7 +3,7 @@
 set -e
 
 # ─── Load logging library from GitHub ───────────────────────────────────────
-LIB_URL="https://raw.githubusercontent.com/iswad-lab/dotfiles/main/.lib_logging.sh"
+LIB_URL="https://raw.githubusercontent.com/ismail-bahloul/dotfiles/main/.lib_logging.sh"
 LIB=$(curl -fsLS "$LIB_URL" 2>/dev/null) || true
 if [ -n "$LIB" ]; then
   eval "$LIB"
@@ -213,7 +213,7 @@ fi
 # ─── Git ────────────────────────────────────────────────────────────────────
 log_section "Git"
 
-if cd "$SCRIPT_DIR" 2>/dev/null && git remote -v 2>/dev/null | grep -q "iswad-lab/dotfiles"; then
+if cd "$SCRIPT_DIR" 2>/dev/null && git remote -v 2>/dev/null | grep -q "ismail-bahloul/dotfiles"; then
   log_pass "Dotfiles remote OK"
 else
   log_fail "Dotfiles remote not found"

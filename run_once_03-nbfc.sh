@@ -2,7 +2,7 @@
 # =============================================================================
 # run_once_03-nbfc.sh
 # Run once by chezmoi (re-runs if this file changes)
-# Build & install nbfc-linux and nbfc-qt from iswad-lab forks
+# Build & install nbfc-linux and nbfc-qt from ismail-bahloul forks
 # Idempotent: safe to re-run, skips if already built and configured
 # =============================================================================
 set -e
@@ -20,14 +20,14 @@ source "${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/.lib_logging.sh" 2>/de
   log_summary() { :; }
 }
 
-# --- Check if nbfc-linux is already installed from iswad-lab fork ---------------
+# --- Check if nbfc-linux is already installed from ismail-bahloul fork ---------------
 NBFB_BIN="/usr/bin/nbfc-linux"
 NBFB_BUILT=false
 
-if [ -f "$NBFB_BIN" ] && strings "$NBFB_BIN" 2>/dev/null | grep -q "iswad-lab"; then
-  log_skip "nbfc-linux already installed (iswad-lab fork)"
+if [ -f "$NBFB_BIN" ] && strings "$NBFB_BIN" 2>/dev/null | grep -q "ismail-bahloul"; then
+  log_skip "nbfc-linux already installed (ismail-bahloul fork)"
 else
-  log_info "Building nbfc-linux from iswad-lab/nbfc-linux..."
+  log_info "Building nbfc-linux from ismail-bahloul/nbfc-linux..."
   NBFB_BUILT=true
 
   WORKDIR=$(mktemp -d)
@@ -36,7 +36,7 @@ else
   # Clean any previous manual install
   sudo rm -f /usr/bin/nbfc-linux 2>/dev/null || true
 
-  git clone --depth=1 https://github.com/iswad-lab/nbfc-linux "$WORKDIR/nbfc-linux"
+  git clone --depth=1 https://github.com/ismail-bahloul/nbfc-linux "$WORKDIR/nbfc-linux"
   cd "$WORKDIR/nbfc-linux"
   ./autogen.sh > /dev/null || log_fatal "autogen.sh failed"
   ./configure --prefix=/usr --sysconfdir=/etc --bindir=/usr/bin > /dev/null || log_fatal "configure failed"
@@ -50,7 +50,7 @@ NBFB_QT_BIN="/usr/bin/nbfc-qt"
 if [ -f "$NBFB_QT_BIN" ]; then
   log_skip "nbfc-qt already installed"
 else
-  log_info "Building nbfc-qt from iswad-lab/nbfc-qt..."
+  log_info "Building nbfc-qt from ismail-bahloul/nbfc-qt..."
   NBFB_BUILT=true
 
   if [ -z "${WORKDIR:-}" ]; then
@@ -58,7 +58,7 @@ else
     trap 'rm -rf "$WORKDIR"' EXIT
   fi
 
-  git clone --depth=1 https://github.com/iswad-lab/nbfc-qt "$WORKDIR/nbfc-qt"
+  git clone --depth=1 https://github.com/ismail-bahloul/nbfc-qt "$WORKDIR/nbfc-qt"
   cd "$WORKDIR/nbfc-qt"
   make QT_VERSION=6 > /dev/null 2>&1
   sudo make install > /dev/null 2>&1

@@ -5,7 +5,7 @@ Reproducible setup for **CachyOS x86_64** (KDE Plasma 6, Wayland).
 ## Installation
 
 ```bash
-sh -c "$(curl -fsLS https://raw.githubusercontent.com/iswad-lab/dotfiles/main/install.sh)"
+sh -c "$(curl -fsLS https://raw.githubusercontent.com/ismail-bahloul/dotfiles/main/install.sh)"
 ```
 
 ## Structure
@@ -63,7 +63,7 @@ dotfiles/
 - **GPU**: NVIDIA RTX 3070 + AMD Vega (VFIO passthrough for VM)
 - **Audio**: Pipewire (JACK) + REAPER + yabridge (Windows VST bridge)
 - **Virtualization**: QEMU + virt-manager + distrobox
-- **Fan control**: nbfc-linux (fork iswad-lab)
+- **Fan control**: nbfc-linux (fork ismail-bahloul)
 - **Power mgmt**: RyzenAdj + NVIDIA power profiles (AC/battery auto, re-applied every 5 min against EC/firmware override)
 - **Wine**: wine-staging 9.21 standalone runner (~/.local/share/wine-runners/)
 - **Peripherals**: Logitech MX Master 3S (logiops)

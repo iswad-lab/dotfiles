@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # install.sh — bootstrap dotfiles from GitHub
-# Usage: sh -c "$(curl -fsLS https://raw.githubusercontent.com/iswad-lab/dotfiles/main/install.sh)"
+# Usage: sh -c "$(curl -fsLS https://raw.githubusercontent.com/ismail-bahloul/dotfiles/main/install.sh)"
 #        ./install.sh               # fresh install (or update if already installed)
 #        ./install.sh --dry-run     # check prerequisites only, no install
 #        ./install.sh --validate    # force validation even on update
@@ -9,7 +9,7 @@
 set -e
 
 # ─── Load logging library from GitHub ───────────────────────────────────────
-LIB_URL="https://raw.githubusercontent.com/iswad-lab/dotfiles/main/.lib_logging.sh"
+LIB_URL="https://raw.githubusercontent.com/ismail-bahloul/dotfiles/main/.lib_logging.sh"
 LIB=$(curl -fsLS "$LIB_URL" 2>/dev/null) || true
 if [ -n "$LIB" ]; then
   eval "$LIB"
@@ -128,9 +128,9 @@ log_section "Apply dotfiles"
 
 log_info "Applying dotfiles from GitHub..."
 if [ -d "$HOME/.local/share/chezmoi/.git" ]; then
-  chezmoi update --apply 2>/dev/null || chezmoi init --apply https://github.com/iswad-lab/dotfiles
+  chezmoi update --apply 2>/dev/null || chezmoi init --apply https://github.com/ismail-bahloul/dotfiles
 else
-  chezmoi init --apply https://github.com/iswad-lab/dotfiles
+  chezmoi init --apply https://github.com/ismail-bahloul/dotfiles
 fi
 log_pass "Dotfiles applied"
 
@@ -144,7 +144,7 @@ log_section "Validation"
 
 if [ "$INSTALL_TYPE" = "fresh" ] || $FORCE_VALIDATE; then
   log_info "Running post-install validation..."
-  bash <(curl -fsLS "https://raw.githubusercontent.com/iswad-lab/dotfiles/main/validate.sh")
+  bash <(curl -fsLS "https://raw.githubusercontent.com/ismail-bahloul/dotfiles/main/validate.sh")
 else
   log_skip "Validation skipped (run with --validate to force)"
   log_info "Restart your session to apply all changes"
