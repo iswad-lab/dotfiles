@@ -29,8 +29,8 @@ dotfiles/
 │   ├── gh/                           # GitHub CLI config
 │   ├── create_dot_config/             # created only if absent (Plasma owns it afterwards)
 │   │   └── plasma-*.appletsrc         # panel/widgets layout (volatile → apply once)
-│   ├── pipewire/pipewire.conf.d/      # PipeWire: quantum global + mode propriétaire RME (TuxMix)
-│   ├── wireplumber/wireplumber.conf.d/# WirePlumber: règles par interface RME (CC) + Ryzen onboard
+│   ├── pipewire/pipewire.conf.d/      # PipeWire: global quantum + proprietary RME mode (TuxMix)
+│   ├── wireplumber/wireplumber.conf.d/# WirePlumber: per-interface RME (CC) rules + Ryzen onboard
 │   └── *.rc                           # KDE Plasma config (shortcuts, panel, kwin)
 ├── dot_local/
 │   ├── bin/                          # boot scripts, profiles
@@ -87,11 +87,12 @@ dotfiles/
 - **KDE config** (shortcuts, panel, kwin) versioned in `dot_config/`.
 - **Audio PipeWire** — config versioned in `dot_config/pipewire/` and
   `dot_config/wireplumber/`:
-  - **RME Babyface Pro FS** basculable entre mode **CC** (kernel driver,
-    `51-rme.conf`) et mode **propriétaire** (driver maison TuxMix via
-    `50-tuxmix.conf`) — voir
+  - **RME Babyface Pro FS** switchable between **CC** mode (kernel driver,
+    `51-rme.conf`) and **proprietary** mode (in-house TuxMix driver via
+    `50-tuxmix.conf`) — see
     `dot_config/pipewire/pipewire.conf.d/README.md`.
-  - **Quantum par interface** : global = 64 (RME CC), mais la carte interne
-    Ryzen force 256 (`52-ryzen-quantum.conf`) — le 64 y cause des sous-runs.
-- Ces règles de quantum/noms de nœud sont propres à ce laptop (Ryzen
-  `pci-0000_07_00.6`, RME USB) — pas prévu pour d'autres machines.
+  - **Per-interface quantum**: global = 64 (RME CC), but the internal Ryzen
+    sound card forces 256 (`52-ryzen-quantum.conf`) — the 64 causes
+    underruns there.
+- These quantum/node-name rules are specific to this laptop (Ryzen
+  `pci-0000_07_00.6`, RME USB) — not intended for other machines.

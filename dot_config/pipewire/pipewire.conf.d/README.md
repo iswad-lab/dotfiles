@@ -1,28 +1,28 @@
-# RME Babyface Pro FS — modes de fonctionnement
+# RME Babyface Pro FS — operating modes
 
-Ce dossier contient la config pour la carte son externe **RME Babyface Pro FS**
-et l'audio interne du laptop. Deux modes mutuellement exclusifs pour la RME :
+This folder holds the config for the external **RME Babyface Pro FS** interface
+and the laptop's internal audio. Two mutually exclusive modes for the RME:
 
-## Bascule CC ⇄ Propriétaire (TuxMix)
+## Switching CC ⇄ Proprietary (TuxMix)
 
-La bascule se fait par l'**extension du fichier** `50-tuxmix.conf` :
+Switching is done by **renaming the file** `50-tuxmix.conf`:
 
-| Mode            | État du fichier                          | Pilotage de la RME          |
-|-----------------|------------------------------------------|-----------------------------|
-| **CC** (défaut) | `50-tuxmix.conf.disabled` (désactivé)    | Kernel driver (`snd-usb-audio`) via `51-rme.conf` |
-| **Propriétaire**| `50-tuxmix.conf` (actif, renommer)       | Driver maison **TuxMix** (TotalMix, mode propriétaire) |
+| Mode           | File state                                 | RME control                       |
+|----------------|--------------------------------------------|-----------------------------------|
+| **CC** (default)| `50-tuxmix.conf.disabled` (disabled)       | Kernel driver (`snd-usb-audio`) via `51-rme.conf` |
+| **Proprietary** | `50-tuxmix.conf` (active, rename)          | In-house **TuxMix** driver (TotalMix, proprietary mode) |
 
-Passer en mode propriétaire :
+Switch to proprietary mode:
 
 ```bash
 mv ~/.config/pipewire/pipewire.conf.d/50-tuxmix.conf.disabled \
    ~/.config/pipewire/pipewire.conf.d/50-tuxmix.conf
 systemctl --user restart pipewire pipewire-pulse
-# le sink "RME Babyface Pro FS (TuxMix)" apparaît
+# the "RME Babyface Pro FS (TuxMix)" sink appears
 pactl set-default-sink tuxmix
 ```
 
-Revenir en mode CC (Class Compliant) :
+Switch back to CC (Class Compliant) mode:
 
 ```bash
 mv ~/.config/pipewire/pipewire.conf.d/50-tuxmix.conf \
@@ -30,15 +30,15 @@ mv ~/.config/pipewire/pipewire.conf.d/50-tuxmix.conf \
 systemctl --user restart pipewire wireplumber pipewire-pulse
 ```
 
-> **Important** : le mode propriétaire et le mode CC ne peuvent pas tourner en
-> même temps sur l'USB — un seul streaming session par appareil. Le driver
-> TuxMix et le kernel driver `snd-usb-audio` ciblent la même interface.
+> **Important**: proprietary and CC modes cannot run at the same time over
+> USB — only one streaming session per device. The TuxMix driver and the
+> `snd-usb-audio` kernel driver target the same interface.
 
-## Interface interne Ryzen — quantum spécifique
+## Internal Ryzen interface — specific quantum
 
-- `custom-settings.conf` : quantum global par défaut = `64` (adapté au CC RME).
-  Les `min-quantum`/`max-quantum` sont **volontairement retirés** pour ne pas
-  verrouiller toutes les interfaces sur un plancher rigide.
-- `52-ryzen-quantum.conf` (WirePlumber) : force `256` sur la carte interne
-  Ryzen (`alsa_{output,input}.pci-0000_07_00.6.*`) seule — le 64 y cause des
-  sous-runs. Ajuster `node.quantum.min/max` pour tester d'autres valeurs.
+- `custom-settings.conf`: default global quantum = `64` (suited for RME CC).
+  The `min-quantum`/`max-quantum` are **deliberately removed** so that not all
+  interfaces are locked onto a rigid floor.
+- `52-ryzen-quantum.conf` (WirePlumber): forces `256` on the internal Ryzen
+  sound card (`alsa_{output,input}.pci-0000_07_00.6.*`) only — 64 causes
+  underruns there. Adjust `node.quantum.min/max` to test other values.
