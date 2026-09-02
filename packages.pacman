@@ -4,10 +4,8 @@
 # CachyOS+KDE already installed — this file manages the delta only
 # =============================================================================
 
-# --- Hybrid GPU NVIDIA + AMD --------------------------------------------------
-switcheroo-control          # iGPU/dGPU switching
+# --- GPU NVIDIA + AMD (pas de mode-switching : le dGPU pilote l'écran) --------
 libva-nvidia-driver         # VA-API hardware acceleration for NVIDIA (Wayland)
-nvidia-prime                # prime-run
 lib32-nvidia-utils          # 32-bit NVIDIA layer (Wine, Steam)
 opencl-nvidia               # NVIDIA compute
 lib32-opencl-nvidia

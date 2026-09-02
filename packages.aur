@@ -3,9 +3,6 @@
 # Installed via: run_once_01-packages.sh
 # =============================================================================
 
-# --- Hybrid GPU --------------------------------------------------------------
-envycontrol                 # GPU profile management (performance/hybrid/integrated)
-
 # --- Pro Audio ---------------------------------------------------------------
 airwindows-consolidated-bin
 tal-reverb4-clap-bin
