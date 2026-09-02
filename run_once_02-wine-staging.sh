@@ -8,18 +8,9 @@
 # =============================================================================
 set -euo pipefail
 
-source "${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/.lib_logging.sh" 2>/dev/null || {
-  log_section() { echo ""; echo "─── $1 ───"; }
-  log_pass() { echo "  ✔ $1"; }
-  log_fail() { echo "  ✘ $1"; }
-  log_fatal() { echo "  ✘ $1"; exit 1; }
-  log_warn() { echo "  ⚠ $1"; }
-  log_info() { echo "  → $1"; }
-  log_skip() { echo "  ⋯ $1"; }
-  log_detail() { echo "    • $1"; }
-  log_cmd() { echo "  $ $1"; }
-  log_summary() { :; }
-}
+# Logging helpers: .lib_logging.sh ships in the chezmoi source dir and is always
+# present when run_once scripts run under chezmoi, so no fallback is needed.
+source "${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/.lib_logging.sh"
 
 WINE_VERSION="9.21-1"
 WINE_PKG="wine-staging-${WINE_VERSION}-x86_64.pkg.tar.zst"

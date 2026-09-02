@@ -4,21 +4,8 @@ set -e
 
 # ─── Load logging library ──────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-if [ -f "$SCRIPT_DIR/.lib_logging.sh" ]; then
-  source "$SCRIPT_DIR/.lib_logging.sh"
-else
-  log_init() { :; }
-  log_section() { echo ""; echo "─── $1 ───"; }
-  log_pass() { echo "  ✔ $1"; }
-  log_fail() { echo "  ✘ $1"; }
-  log_fatal() { echo "  ✘ $1"; exit 1; }
-  log_warn() { echo "  ⚠ $1"; }
-  log_info() { echo "  → $1"; }
-  log_skip() { echo "  ⋯ $1"; }
-  log_detail() { echo "    • $1"; }
-  log_cmd() { echo "  $ $1"; }
-  log_summary() { :; }
-fi
+# The lib ships with the repo, so it is always present here.
+source "$SCRIPT_DIR/.lib_logging.sh"
 
 cd "$SCRIPT_DIR"
 log_init
