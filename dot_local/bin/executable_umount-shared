@@ -1,0 +1,15 @@
+#!/bin/bash
+# umount-shared — démonte proprement la partition SHARED (NTFS).
+# Toujours démonter avant de redémarrer Windows (évite l'état « dirty »).
+set -eu
+
+MP="$HOME/Shared"
+
+if ! mountpoint -q "$MP"; then
+  echo "rien à démonter ($MP n'est pas monté)"
+  exit 0
+fi
+
+sync
+sudo umount "$MP"
+echo "démonté : $MP"

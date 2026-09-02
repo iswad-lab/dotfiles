@@ -12,11 +12,14 @@ source "${CHEZMOI_SOURCE_DIR:-$HOME/.local/share/chezmoi}/.lib_logging.sh"
 
 log_info "Enabling libvirt services..."
 
-# Enable socket activation (services start on demand)
+# Socket activation: daemons start on first access (no always-on processes).
+# The matching virt*@.service units are disabled — no autostart VM depends on them.
 for drv in qemu interface network nodedev nwfilter secret storage; do
   sudo systemctl enable "virt${drv}d.socket"
   sudo systemctl start  "virt${drv}d.socket"
-done
+  sudo systemctl disable "virt${drv}d.service" 2>/dev/null || true
+  sudo systemctl stop "virt${drv}d.service" 2>/dev/null || true
+ done
 
 log_info "Adding user to libvirt and kvm groups..."
 sudo usermod -aG libvirt,kvm "$USER"

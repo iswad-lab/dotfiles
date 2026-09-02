@@ -1,0 +1,21 @@
+#!/bin/bash
+# mount-shared — monte la partition Windows partagée (SHARED, NTFS) en rw
+# pour échanger des fichiers entre Linux et Windows.
+set -eu
+
+PART_UUID="5CAC12755C11BA05"   # nvme1n1p3 (SHARED, 402 Go)
+MP="$HOME/Shared"
+
+if mountpoint -q "$MP"; then
+  echo "déjà monté sur $MP"
+  exit 0
+fi
+
+mkdir -p "$MP"
+# ntfs-3g en userspace : rw, propriétaire = user, pas de flush intempestif.
+sudo mount -t ntfs-3g \
+  -o rw,uid=$(id -u),gid=$(id -g),noatime,windows_names \
+  "UUID=$PART_UUID" "$MP"
+
+echo "monté : SHARED -> $MP"
+df -h "$MP" | tail -1
