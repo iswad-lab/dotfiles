@@ -13,5 +13,8 @@ test.sh
 .lib_logging.sh
 opencode.jsonc
 
+# Windows-side helpers (not deployed to ~/)
+win
+
 # Local secrets (API keys, tokens) — never versioned
 dot_config/zsh/secrets
