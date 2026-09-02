@@ -99,7 +99,7 @@ else
   if [ -d "$RUNNER_PATH/usr" ]; then
     mv "$RUNNER_PATH/usr/"* "$RUNNER_PATH/" 2>/dev/null || true
     mv "$RUNNER_PATH/usr/."* "$RUNNER_PATH/" 2>/dev/null || true
-    rm -rf "$RUNNER_PATH/usr"
+    rm -rf "${RUNNER_PATH:?}/usr"
   fi
 
   # Verify the binary exists

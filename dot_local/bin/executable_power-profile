@@ -17,6 +17,7 @@ write_cpu_sysfs() {
 
 # ------ Settings ------
 GPU_AC=1800
+GPU_AC_MIN=500   # plancher fréquence secteur: évite le sommeil profond P8 (cause des mini-freezes au lancement d'app)
 GPU_BAT=400
 TDP_AC=35000
 TDP_BAT=15000
@@ -48,10 +49,10 @@ apply_ac() {
     write_cpu_sysfs energy_performance_preference balance_power
     /usr/bin/ryzenadj --stapm-limit=${TDP_AC} --fast-limit=${FAST_AC} --slow-limit=${TDP_AC} \
              --apu-slow-limit=22000 --tctl-temp=${TEMP_AC} 2>&1 || log "WARN: ryzenadj AC failed"
-    nvidia-smi -lgc 0,${GPU_AC} > /dev/null 2>&1 || true
+    nvidia-smi -lgc ${GPU_AC_MIN},${GPU_AC} > /dev/null 2>&1 || true
     iw dev wlan0 set power_save off 2>/dev/null || true
-    echo ">>> AC mode: CPU 3.2 GHz / $((TDP_AC / 1000))W / GPU 0–${GPU_AC} MHz (mem: dynamic)"
-    log "OK: CPU 3.2 GHz / $((TDP_AC / 1000))W, GPU ${GPU_AC} MHz (mem: auto)"
+    echo ">>> AC mode: CPU 3.2 GHz / $((TDP_AC / 1000))W / GPU ${GPU_AC_MIN}–${GPU_AC} MHz (mem: dynamic)"
+    log "OK: CPU 3.2 GHz / $((TDP_AC / 1000))W, GPU ${GPU_AC_MIN}-${GPU_AC} MHz (mem: auto)"
 }
 
 apply_battery() {

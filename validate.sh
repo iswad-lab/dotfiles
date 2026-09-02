@@ -48,24 +48,22 @@ if [ -f "$SCRIPT_DIR/packages.pacman" ]; then
   if [ "$MISSING" -eq 0 ]; then log_pass "All pacman packages installed"; fi
 fi
 if [ -f "$SCRIPT_DIR/packages.aur" ]; then
+  MISSING_AUR=0
   while IFS= read -r pkg; do
     [ -z "$pkg" ] && continue
-    if ! pacman -Q "$pkg" &>/dev/null; then log_fail "$pkg (AUR)"; fi
+    if ! pacman -Q "$pkg" &>/dev/null; then log_fail "$pkg (AUR)"; MISSING_AUR=1; fi
   done < <(grep -v '^\s*#' "$SCRIPT_DIR/packages.aur" | awk '{print $1}')
-  log_pass "All AUR packages installed"
+  if [ "$MISSING_AUR" -eq 0 ]; then log_pass "All AUR packages installed"; fi
 fi
 
 # ─── Services ───────────────────────────────────────────────────────────────
 log_section "Services"
 
 for svc in power-profile.service nbfc_service.service; do
-  if ! systemctl is-active "$svc" &>/dev/null; then
-    sleep 2
-  fi
   if systemctl is-active "$svc" &>/dev/null; then
     log_pass "$svc active"
   else
-    log_pass "$svc not active (may need hardware)"
+    log_warn "$svc not active (may need hardware)"
   fi
 done
 for svc in nvidia-powerd.service nvidia-suspend.service nvidia-resume.service; do

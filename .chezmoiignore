@@ -6,10 +6,12 @@ my-nbfc.json
 packages.pacman
 packages.aur
 README.md
+LICENSE
 validate.sh
 install.sh
 test.sh
 .lib_logging.sh
+opencode.jsonc
 
 # Local secrets (API keys, tokens) — never versioned
 dot_config/zsh/secrets

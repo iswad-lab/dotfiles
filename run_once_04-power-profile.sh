@@ -29,9 +29,18 @@ if [ -f /usr/lib/systemd/system/power-profiles-daemon.service ]; then
   sudo systemctl mask --now power-profiles-daemon.service 2>/dev/null || true
 fi
 
-# Copy the profile script
-sudo cp "$SCRIPT_DIR/dot_local/bin/executable_power-profile" /usr/local/bin/power-profile
-sudo chmod +x /usr/local/bin/power-profile
+# Single source of truth for power-profile: ~/.local/bin/power-profile
+# (chezmoi-managed) is canonical. /usr/local/bin is a symlink to it, so the
+# systemd service and `sudo` (which use secure_path incl. /usr/local/bin)
+# always resolve to the same file as an interactive `power-profile`.
+PROFILE_TARGET="$HOME/.local/bin/power-profile"
+mkdir -p "$HOME/.local/bin"
+if [ ! -f "$PROFILE_TARGET" ]; then
+  # Bootstrap fallback if chezmoi hasn't deployed the file yet.
+  cp "$SCRIPT_DIR/dot_local/bin/executable_power-profile" "$PROFILE_TARGET"
+fi
+chmod +x "$PROFILE_TARGET"
+sudo ln -sf "$PROFILE_TARGET" /usr/local/bin/power-profile
 
 # Remove old service/udev if they exist (from ryzenadj-profile rename)
 sudo rm -f /etc/systemd/system/ryzenadj-profile.service /etc/systemd/system/ryzenadj.service /etc/systemd/system/ryzenadj.timer /etc/udev/rules.d/99-ryzenadj-profile.rules

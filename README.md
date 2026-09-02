@@ -25,10 +25,10 @@ dotfiles/
 ├── packages.pacman                   # official repo packages
 ├── packages.aur                      # AUR packages
 ├── my-nbfc.json                       # custom fan profile (NBFC)
+├── create_dot_config/                 # created only if absent (Plasma owns it afterwards)
+│   └── plasma-*.appletsrc             # panel/widgets layout (volatile → apply once)
 ├── dot_config/
 │   ├── gh/                           # GitHub CLI config
-│   ├── create_dot_config/             # created only if absent (Plasma owns it afterwards)
-│   │   └── plasma-*.appletsrc         # panel/widgets layout (volatile → apply once)
 │   ├── pipewire/pipewire.conf.d/      # PipeWire: global quantum + proprietary RME mode (TuxMix)
 │   ├── wireplumber/wireplumber.conf.d/# WirePlumber: per-interface RME (CC) rules + Ryzen onboard
 │   └── *.rc                           # KDE Plasma config (shortcuts, panel, kwin)
